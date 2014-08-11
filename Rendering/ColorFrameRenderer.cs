@@ -67,11 +67,6 @@ namespace KinectKannon.Rendering
         private readonly Color trackedJointColor = Color.FromArgb(255, 68, 192, 68);
 
         /// <summary>
-        /// Brush used for drawing joints that are currently targeted
-        /// </summary>
-        private readonly Color trackedJointColor = Color.FromArgb(200, 255, 0, 0);
-
-        /// <summary>
         /// Brush used for drawing joints that are currently inferred (yellow)
         /// </summary>        
         private readonly Color inferredJointColor = Color.FromArgb(255, 248, 254, 12);
@@ -213,7 +208,7 @@ namespace KinectKannon.Rendering
         /// <param name="jointPoints">translated positions of joints to draw</param>
         /// <param name="drawingContext">drawing context to draw to</param>
         /// <param name="drawingPen">specifies color to draw a specific body</param>
-        public void DrawBody(IReadOnlyDictionary<JointType, Joint> joints, IDictionary<JointType, Point> jointPoints, Color drawingColor, bool targeted)
+        public void DrawBody(IReadOnlyDictionary<JointType, Joint> joints, IDictionary<JointType, Point> jointPoints, Color drawingColor)
         {
 
             // Draw the bones
@@ -226,10 +221,6 @@ namespace KinectKannon.Rendering
             foreach (JointType jointType in joints.Keys)
             {
                 Color drawColor = this.trackedJointColor;
-                if (targeted && jointType == JointType.SpineMid)
-                {
-
-                }
                 
 
                 TrackingState trackingState = joints[jointType].TrackingState;
