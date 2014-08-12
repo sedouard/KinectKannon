@@ -327,7 +327,7 @@ namespace KinectKannon
                 CannonX = this.CannonX,
                 CannonY = this.CannonY,
                 StatusText = this.statusText,
-                SystemReady = (this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen),
+                SystemReady = (this.kinectSensor != null && this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen),
                 FrameRate = this.FrameRate,
                 TrackingMode = this.trackingMode
             });
