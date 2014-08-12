@@ -488,7 +488,11 @@ namespace KinectKannon
                     trackIndex = (int)requestedTrackedSkeleton;
                 }
 
-                colorRenderer.DrawBodies(this.bodies, this.coordinateMapper, trackIndex);
+                if (this.trackingMode == TrackingMode.SKELETAL)
+                {
+                    colorRenderer.DrawBodies(this.bodies, this.coordinateMapper, trackIndex);
+                }
+                
             }
         }
 

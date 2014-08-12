@@ -38,8 +38,8 @@
         <Viewbox Grid.Row="1" HorizontalAlignment="Center" Panel.ZIndex="1">
             <Image Source="{Binding HudSource}" Stretch="UniformToFill" />
         </Viewbox>
-        <Viewbox x:Name="AudioViewBox" Stretch="Uniform" Panel.ZIndex="2" HorizontalAlignment="Center" Width="1978" Margin="-103,4.8,-147,-169" Grid.RowSpan="2" Grid.Row="1" Visibility="Hidden">
-            <Canvas Width="1" Height="1" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" Margin="0" d:IsLocked="True">
+        <Viewbox x:Name="AudioViewBox" Stretch="Uniform" Panel.ZIndex="2" HorizontalAlignment="Center" Width="1978" Margin="-103,4.8,-147,-169" Grid.RowSpan="2" Grid.Row="1" Visibility="Hidden" OpacityMask="Black">
+            <Canvas Width="1" Height="1" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" Margin="0">
                 <Canvas.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform/>
@@ -64,11 +64,11 @@
                             <LinearGradientBrush.Transform>
                                 <RotateTransform x:Name="beamBarRotation" CenterX="0.5" CenterY="0.0" Angle="0"/>
                             </LinearGradientBrush.Transform>
-                            <GradientStop x:Name="beamBarGsStart"  Color="White"   Offset="0" />
-                            <GradientStop x:Name="beamBarGsPre"    Color="White"   Offset="0.45" />
-                            <GradientStop x:Name="beamBarGsMain"   Color="{StaticResource KinectPurpleColor}"  Offset="0.5" />
-                            <GradientStop x:Name="beamBarGsPost"   Color="White"   Offset="0.55" />
-                            <GradientStop x:Name="beamBarGsEnd"    Color="White"   Offset="1" />
+                            <GradientStop x:Name="beamBarGsStart"  Color="#7FFFFFFF"   Offset="0" />
+                            <GradientStop x:Name="beamBarGsPre"    Color="#7FFFFFFF"   Offset="0.45" />
+                            <GradientStop x:Name="beamBarGsMain"   Color="#7F52318F"  Offset="0.5" />
+                            <GradientStop x:Name="beamBarGsPost"   Color="#7FFFFFFF"   Offset="0.55" />
+                            <GradientStop x:Name="beamBarGsEnd"    Color="#7FFFFFFF"   Offset="1" />
                         </LinearGradientBrush>
                     </Path.Fill>
                 </Path>
@@ -85,8 +85,8 @@
                     </Path.Fill>
                 </Path>
                 <Path Data="M 0.1270,0.3021 L 0.228,0.2203 A 0.35,0.35 102 0 0 0.772,0.2203 L 0.8730,0.3021 A 0.48,0.48 102 0 1 0.1270,0.3021 Z"  StrokeThickness="0.001" Stroke="#7FD3D3D3"/>
-                <Path Data="M 0.2280,0.2203 L 0.13,0.2203 L 0.13,0.0353 L 0.15,0.0353" StrokeThickness="0.001" Stroke="LightGray"/>
-                <Path Data="M 0.7720,0.2203 L 0.87,0.2203 L 0.87,0.0353 L 0.85,0.0353" StrokeThickness="0.001" Stroke="LightGray"/>
+                <Path Data="M 0.2280,0.2203 L 0.13,0.2203 L 0.13,0.0353 L 0.15,0.0353" StrokeThickness="0.001" Stroke="#7FD3D3D3"/>
+                <Path Data="M 0.7720,0.2203 L 0.87,0.2203 L 0.87,0.0353 L 0.85,0.0353" StrokeThickness="0.001" Stroke="#7FD3D3D3"/>
             </Canvas>
         </Viewbox>
         <StatusBar Grid.Row="2" HorizontalAlignment="Stretch" x:Name="statusBar" VerticalAlignment="Bottom" Background="White" Foreground="{StaticResource MediumGreyBrush}">
