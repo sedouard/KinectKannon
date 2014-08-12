@@ -24,80 +24,6 @@ namespace KinectKannon
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        /// <summary>
-        /// Radius of drawn hand circles
-        /// </summary>
-        private const double HandSize = 30;
-
-        /// <summary>
-        /// Thickness of drawn joint lines
-        /// </summary>
-        private const double JointThickness = 10;
-
-        /// <summary>
-        /// Thickness of clip edge rectangles
-        /// </summary>
-        private const int ClipBoundsThickness = 10;
-
-        /// <summary>
-        /// Constant for clamping Z values of camera space points from being negative
-        /// </summary>
-        private const float InferredZPositionClamp = 0.1f;
-
-        /// <summary>
-        /// Brush used for drawing hands that are currently tracked as closed
-        /// </summary>
-        private readonly Color handClosedColor = Color.FromArgb(128, 255, 0, 0);
-
-        /// <summary>
-        /// Brush used for drawing hands that are currently tracked as opened
-        /// </summary>
-        private readonly Color handOpenColor = Color.FromArgb(128, 0, 255, 0);
-
-        /// <summary>
-        /// Brush used to draw cross Hairs
-        /// </summary>
-        private readonly Color crossHairColor = Color.FromArgb(128, 0, 0, 0);
-
-        /// <summary>
-        /// Brush used for drawing hands that are currently tracked as in lasso (pointer) position
-        /// </summary>
-        private readonly Color handLassoColor = Color.FromArgb(128, 0, 0, 255);
-
-        /// <summary>
-        /// Brush used for drawing joints that are currently tracked
-        /// </summary>
-        private readonly Color trackedJointColor = Color.FromArgb(255, 68, 192, 68);
-
-        /// <summary>
-        /// Brush used for drawing joints that are currently inferred (yellow)
-        /// </summary>        
-        private readonly Color inferredJointColor = Color.FromArgb(255, 248, 254, 12);
-
-        /// <summary>
-        /// Pen used for drawing bones that are currently inferred
-        /// </summary>        
-        private readonly Color inferredBoneColor = Color.FromArgb(255, 133, 128, 138);
-
-        /// <summary>
-        /// Size of the RGB pixel in the bitmap
-        /// </summary>
-        private readonly uint bytesPerPixel = 0;
-
-        /// <summary>
-        /// The bitmap used to stream the camera
-        /// </summary>
-        private WriteableBitmap imageSource;
-
-        /// <summary>
-        /// The bitmap used to stream the camera
-        /// </summary>
-        private DrawingGroup hudDrawingGroup;
-
-        /// <summary>
-        /// The bitmap used to stream the camera
-        /// </summary>
-        private DrawingImage hudSource;
 
         /// <summary>
         /// Active Kinect sensor
@@ -119,35 +45,12 @@ namespace KinectKannon
         /// </summary>
         private ColorFrameReader colorFrameReader = null;
 
+        private AudioBeamFrameReader audioReader = null;
+
         /// <summary>
         /// Array for the bodies
         /// </summary>
         private Body[] bodies = null;
-
-        /// <summary>
-        /// Width of display (depth space)
-        /// </summary>
-        private int jointDisplayWidth;
-
-        /// <summary>
-        /// Height of display (depth space)
-        /// </summary>
-        private int jointDisplayHeight;
-
-        /// <summary>
-        /// Width of display (color space)
-        /// </summary>
-        private int displayWidth;
-
-        /// <summary>
-        /// Height of display (color space)
-        /// </summary>
-        private int displayHeight;
-
-        /// <summary>
-        /// Current status text to display
-        /// </summary>
-        private string statusText = null;
 
         /// <summary>
         /// Describes an arbitrary number which represents how far left or right the cannon is position
@@ -161,7 +64,15 @@ namespace KinectKannon
         /// </summary>
         private double cannonYPosition = 0.0f;
 
+        /// <summary>
+        /// The current tracking mode of the system
+        /// </summary>
         private TrackingMode trackingMode = TrackingMode.MANUAL;
+
+        /// <summary>
+        /// The skeleton that is requested to be tracked
+        /// </summary>
+        private SkeletalLetter requestedTrackedSkeleton = SkeletalLetter.A;
 
         /// <summary>
         /// The frame rate that will be displayed.
@@ -176,8 +87,30 @@ namespace KinectKannon
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
         /// 
-
         private ColorFrameRenderer colorRenderer;
+
+        /// <summary>
+        /// Responsible for drawing the HUD layer
+        /// </summary>
+        private HudRenderer hudRenderer;
+
+        private string statusText = null;
+
+        /// <summary>
+        /// Last observed audio beam angle in radians, in the range [-pi/2, +pi/2]
+        /// </summary>
+        private float beamAngle = 0;
+
+        /// <summary>
+        /// Last observed audio beam angle confidence, in the range [0, 1]
+        /// </summary>
+        private float beamAngleConfidence = 0;
+
+        /// <summary>
+        /// Will be allocated a buffer to hold a single sub frame of audio data read from audio stream.
+        /// </summary>
+        private readonly byte[] audioBuffer = null;
+
         public MainWindow()
         {
             // one sensor is currently supported
@@ -191,37 +124,28 @@ namespace KinectKannon
 
             this.colorFrameReader = this.kinectSensor.ColorFrameSource.OpenReader();
 
+            this.audioReader = this.kinectSensor.AudioSource.OpenReader();
+
             // get the depth (display) extents
-            FrameDescription frameDescription = this.kinectSensor.DepthFrameSource.FrameDescription;
-
-            // get size of joint space
-            this.jointDisplayWidth = frameDescription.Width;
-            this.jointDisplayHeight = frameDescription.Height;
-            
-            //setup the drawing area for the HUD
-            this.hudDrawingGroup = new DrawingGroup();
-
-            this.hudSource = new DrawingImage(this.hudDrawingGroup);
+            FrameDescription jointFrameDescription = this.kinectSensor.DepthFrameSource.FrameDescription;
             
             FrameDescription colorFrameDescription = this.kinectSensor.ColorFrameSource.CreateFrameDescription(ColorImageFormat.Bgra);
 
-            // create the bitmap to display
-            this.imageSource = new WriteableBitmap(colorFrameDescription.Width, colorFrameDescription.Height, 96.0, 96.0, PixelFormats.Pbgra32, null);
+            colorRenderer = new ColorFrameRenderer(colorFrameDescription.Width, colorFrameDescription.Height, jointFrameDescription.Width, jointFrameDescription.Height);
+            var drawingGroup = new DrawingGroup();
+            var drawingImage = new DrawingImage(drawingGroup);
+            hudRenderer = new HudRenderer(drawingGroup, drawingImage, colorFrameDescription.Width, colorFrameDescription.Height);
 
-            // rgba is 4 bytes per pixel
-            this.bytesPerPixel = colorFrameDescription.BytesPerPixel;
+            AudioSource audioSource = this.kinectSensor.AudioSource;
 
-            
-            // get size of picture space
-            this.displayWidth = colorFrameDescription.Width;
-            this.displayHeight = colorFrameDescription.Height;
-
-            // wire handler for frame arrival
-            //this.colorFrameReader.FrameArrived += this.Reader_ColorFrameArrived;
-
-            colorRenderer = new ColorFrameRenderer(colorFrameDescription.Width, colorFrameDescription.Height);
+            // Allocate 1024 bytes to hold a single audio sub frame. Duration sub frame 
+            // is 16 msec, the sample rate is 16khz, which means 256 samples per sub frame. 
+            // With 4 bytes per sample, that gives us 1024 bytes.
+            this.audioBuffer = new byte[audioSource.SubFrameLengthInBytes];
 
             this.colorFrameReader.FrameArrived += this.Reader_ColorFrameArrived;
+
+            this.audioReader.FrameArrived += audioReader_FrameArrived;
 
             // set IsAvailableChanged event notifier
             this.kinectSensor.IsAvailableChanged += this.Sensor_IsAvailableChanged;
@@ -243,10 +167,92 @@ namespace KinectKannon
             SetupKeyHandlers();
 
             //draw the headsup display initially
-            RenderHud();
+            this.hudRenderer.RenderHud(new HudRenderingParameters()
+            {
+                CannonX = this.CannonX,
+                CannonY = this.CannonY,
+                StatusText = this.statusText,
+                SystemReady = (this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen),
+                FrameRate = this.FrameRate,
+                TrackingMode = this.trackingMode
+            });
 
             //debug start frame rate counter
             FPSTimerStart();
+        }
+
+        void audioReader_FrameArrived(object sender, AudioBeamFrameArrivedEventArgs e)
+        {
+            AudioBeamFrameReference frameReference = e.FrameReference;
+
+            try
+            {
+                AudioBeamFrameList frameList = frameReference.AcquireBeamFrames();
+
+                if (frameList != null)
+                {
+                    // AudioBeamFrameList is IDisposable
+                    using (frameList)
+                    {
+                        // Only one audio beam is supported. Get the sub frame list for this beam
+                        IReadOnlyList<AudioBeamSubFrame> subFrameList = frameList[0].SubFrames;
+
+                        // Loop over all sub frames, extract audio buffer and beam information
+                        foreach (AudioBeamSubFrame subFrame in subFrameList)
+                        {
+                            // Check if beam angle and/or confidence have changed
+                            bool updateBeam = false;
+
+                            if (subFrame.BeamAngle != this.beamAngle)
+                            {
+                                this.beamAngle = subFrame.BeamAngle;
+                                updateBeam = true;
+                            }
+
+                            if (subFrame.BeamAngleConfidence != this.beamAngleConfidence)
+                            {
+                                this.beamAngleConfidence = subFrame.BeamAngleConfidence;
+                                updateBeam = true;
+                            }
+
+                            if (updateBeam)
+                            {
+                                // Refresh display of audio beam
+                                this.AudioBeamChanged();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore if the frame is no longer available
+            }
+        }
+
+        /// <summary>
+        /// Method called when audio beam angle and/or confidence have changed.
+        /// </summary>
+        private void AudioBeamChanged()
+        {
+            // Maximum possible confidence corresponds to this gradient width
+            const float MinGradientWidth = 0.04f;
+
+            // Set width of mark based on confidence.
+            // A confidence of 0 would give us a gradient that fills whole area diffusely.
+            // A confidence of 1 would give us the narrowest allowed gradient width.
+            float halfWidth = Math.Max(1 - this.beamAngleConfidence, MinGradientWidth) / 2;
+
+            // Update the gradient representing sound source position to reflect confidence
+            this.beamBarGsPre.Offset = Math.Max(this.beamBarGsMain.Offset - halfWidth, 0);
+            this.beamBarGsPost.Offset = Math.Min(this.beamBarGsMain.Offset + halfWidth, 1);
+
+            // Convert from radians to degrees for display purposes
+            float beamAngleInDeg = this.beamAngle * 180.0f / (float)Math.PI;
+
+            // Rotate gradient to match angle
+            beamBarRotation.Angle = -beamAngleInDeg;
+            beamNeedleRotation.Angle = -beamAngleInDeg;
         }
 
         private void SetupKeyHandlers()
@@ -254,6 +260,11 @@ namespace KinectKannon
             KeyDown += MainWindow_KeyDown;
         }
 
+        /// <summary>
+        /// Handles an 'controller' actions using the keyboard interface
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void MainWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             //TODO: This is where the logic for controlling the servos will be placed
@@ -276,14 +287,27 @@ namespace KinectKannon
             else if (e.Key == Key.NumPad1 || e.Key == Key.D1)
             {
                 this.trackingMode = TrackingMode.MANUAL;
+                AudioViewBox.Visibility = Visibility.Hidden;
             }
             else if (e.Key == Key.NumPad2 || e.Key == Key.D2)
             {
                 this.trackingMode = TrackingMode.SKELETAL;
+                AudioViewBox.Visibility = Visibility.Hidden;
             }
             else if (e.Key == Key.NumPad3 || e.Key == Key.D3)
             {
                 this.trackingMode = TrackingMode.AUDIBLE;
+                AudioViewBox.Visibility = Visibility.Visible;
+            }
+            else if (this.trackingMode == TrackingMode.SKELETAL &&
+                e.Key == Key.A)
+            {
+                this.requestedTrackedSkeleton = SkeletalLetter.A;
+            }
+            else if (this.trackingMode == TrackingMode.SKELETAL &&
+                e.Key == Key.B)
+            {
+                this.requestedTrackedSkeleton = SkeletalLetter.B;
             }
         }
 
@@ -294,50 +318,20 @@ namespace KinectKannon
         /// <param name="e">event arguments</param>
         private void Reader_ColorFrameArrived(object sender, ColorFrameArrivedEventArgs e)
         {
-
+            //render color layer
             this.colorRenderer.Reader_ColorFrameArrived(sender, e);
             elapsedFrames++;
-            RenderHud();
-        }
-
-        private void RenderHud()
-        {
-            using (DrawingContext dc = this.hudDrawingGroup.Open())
+            //draw the headsup display initially
+            this.hudRenderer.RenderHud(new HudRenderingParameters()
             {
-                // Draw a transparent background to set the render size
-                dc.DrawRectangle(Brushes.Transparent, null, new Rect(0.0, 0.0, this.displayWidth, this.displayHeight));
-                var statusBrush = Brushes.Green;
-                if (!(kinectSensor.IsAvailable && kinectSensor.IsOpen))
-                {
-                    statusBrush = Brushes.Red;
-                }
-
-                //frame rate
-                RenderHudText(dc, "FPS: " + this.FrameRate, Brushes.White, 20, new Point(1800, 0));
-                //System Status
-                RenderHudText(dc, "System Status: " + this.statusText, statusBrush, 20, new System.Windows.Point(0, 0));
-                //Cannon Properties
-                RenderHudText(dc, "Cannon Status: ", Brushes.White, 40, new Point(0,120));
-                RenderHudText(dc, "X Position: " + this.CannonX, Brushes.YellowGreen, 20, new Point(0, 180));
-                RenderHudText(dc, "Y Position: " + this.CannonY, Brushes.YellowGreen, 20, new Point(0, 200));
-
-                dc.DrawRectangle(new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new Pen(), new Rect(10, 300, 300, 300));
-                RenderHudText(dc, "Tracking Mode", Brushes.White, 20, new Point(80, 310));
-                RenderHudText(dc, trackingMode.ToString(), Brushes.YellowGreen, 40, new Point(70, 420));
-            }
+                CannonX = this.CannonX,
+                CannonY = this.CannonY,
+                StatusText = this.statusText,
+                SystemReady = (this.kinectSensor != null && this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen),
+                FrameRate = this.FrameRate,
+                TrackingMode = this.trackingMode
+            });
         }
-
-        private void RenderHudText(DrawingContext dc, string text, Brush color, int fontSize, Point location)
-        {
-            //frame rate
-            dc.DrawText(new FormattedText(text,
-                      CultureInfo.GetCultureInfo("en-us"),
-                      FlowDirection.LeftToRight,
-                      new Typeface("Verdana"),
-                      fontSize, color),
-                      location);
-        }
-     
 
         private void FPSTimerStart()
         {
@@ -374,7 +368,7 @@ namespace KinectKannon
         {
             get
             {
-                return this.hudSource;
+                return this.hudRenderer.ImageSource;
             }
         }
 
@@ -488,44 +482,17 @@ namespace KinectKannon
 
             if (dataReceived)
             {
-                // Draw a transparent background to set the render size
-                this.imageSource.DrawRectangle(0, 0, this.displayWidth, this.displayHeight, Color.FromArgb(255, 128,128,128));
-                
-                
-                foreach (Body body in this.bodies)
-                {
-                    if (body.IsTracked)
-                    {
-                        this.colorRenderer.DrawClippedEdges(body);
-
-                        IReadOnlyDictionary<JointType, Joint> joints = body.Joints;
-
-                        // convert the joint points to depth (display) space
-                        Dictionary<JointType, Point> jointPoints = new Dictionary<JointType, Point>();
-
-                        foreach (JointType jointType in joints.Keys)
-                        {
-                            // sometimes the depth(Z) of an inferred joint may show as negative
-                            // clamp down to 0.1f to prevent coordinatemapper from returning (-Infinity, -Infinity)
-                            CameraSpacePoint position = joints[jointType].Position;
-                            if (position.Z < 0)
-                            {
-                                position.Z = InferredZPositionClamp;
-                            }
-
-                            DepthSpacePoint depthSpacePoint = this.coordinateMapper.MapCameraPointToDepthSpace(position);
-                            //convert joint space to colro space so that we can draw skeletons on top of color feed
-                            jointPoints[jointType] = new Point((depthSpacePoint.X / this.jointDisplayWidth) * 1920, (depthSpacePoint.Y / this.jointDisplayHeight) * 1080);
-                        }
-
-                        this.colorRenderer.DrawBody(joints, jointPoints, this.trackedJointColor);
-
-                        this.colorRenderer.DrawHand(body.HandLeftState, jointPoints[JointType.HandLeft]);
-                        this.colorRenderer.DrawHand(body.HandRightState, jointPoints[JointType.HandRight]);
-                    }
+                int? trackIndex = null;
+                if((int)requestedTrackedSkeleton < this.bodies.Length 
+                    && this.trackingMode == TrackingMode.SKELETAL){
+                    trackIndex = (int)requestedTrackedSkeleton;
                 }
-                // prevent drawing outside of our render area
-                //this.drawingGroup.ClipGeometry = new RectangleGeometry(new Rect(0.0, 0.0, this.displayWidth, this.displayHeight));
+
+                if (this.trackingMode == TrackingMode.SKELETAL)
+                {
+                    colorRenderer.DrawBodies(this.bodies, this.coordinateMapper, trackIndex);
+                }
+                
             }
         }
 
@@ -541,13 +508,12 @@ namespace KinectKannon
                                                             : Microsoft.Samples.Kinect.BodyBasics.Properties.Resources.SensorNotAvailableStatusText;
         }
 
-        enum TrackingMode
-        {
-            MANUAL,
-            SKELETAL,
-            AUDIBLE
-        }
     }
+
+    /// <summary>
+    /// Used to determine which skeleton will be tracked if in SKELETAL tracking
+    /// mode
+    /// </summary>
     public enum SkeletalLetter
     {
         A = 0,
@@ -556,5 +522,16 @@ namespace KinectKannon
         D,
         E,
         F
+    }
+
+    /// <summary>
+    /// The tracking state of the system. Used to determine if pan/tilt will be controlled
+    /// autonomously or manually
+    /// </summary>
+    public enum TrackingMode
+    {
+        MANUAL,
+        SKELETAL,
+        AUDIBLE
     }
 }

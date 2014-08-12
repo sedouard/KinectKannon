@@ -67,11 +67,6 @@ namespace KinectKannon.Rendering
         private readonly Color trackedJointColor = Color.FromArgb(255, 68, 192, 68);
 
         /// <summary>
-        /// Brush used for drawing joints that are currently targeted
-        /// </summary>
-        private readonly Color trackedJointColor = Color.FromArgb(200, 255, 0, 0);
-
-        /// <summary>
         /// Brush used for drawing joints that are currently inferred (yellow)
         /// </summary>        
         private readonly Color inferredJointColor = Color.FromArgb(255, 248, 254, 12);
@@ -96,18 +91,29 @@ namespace KinectKannon.Rendering
         /// </summary>
         private int displayHeight;
 
+        private int jointDisplayWidth;
+
+        private int jointDisplayHeight;
+
         /// <summary>
         /// The bitmap used to stream the camera
         /// </summary>
         private WriteableBitmap imageSource;
 
+        /// <summary>
+        /// Constant for clamping Z values of camera space points from being negative
+        /// </summary>
+        private const float InferredZPositionClamp = 0.1f;
 
-        public ColorFrameRenderer(int frameWidth, int frameHeight)
+        public ColorFrameRenderer(int frameWidth, int frameHeight, int jointFrameWidth, int jointFrameHeight)
         {
             // allocate space to put the pixels to be rendered
             this.colorPixels = new byte[frameWidth * frameHeight * this.bytesPerPixel];
             this.displayWidth = frameWidth;
             this.displayHeight = frameHeight;
+            this.jointDisplayWidth = jointFrameWidth;
+            this.jointDisplayHeight = jointFrameHeight;
+
 
             // a bone defined as a line between two joints
             this.bones = new List<Tuple<JointType, JointType>>();
@@ -213,7 +219,7 @@ namespace KinectKannon.Rendering
         /// <param name="jointPoints">translated positions of joints to draw</param>
         /// <param name="drawingContext">drawing context to draw to</param>
         /// <param name="drawingPen">specifies color to draw a specific body</param>
-        public void DrawBody(IReadOnlyDictionary<JointType, Joint> joints, IDictionary<JointType, Point> jointPoints, Color drawingColor, bool targeted)
+        public void DrawBody(IReadOnlyDictionary<JointType, Joint> joints, IDictionary<JointType, Point> jointPoints, Color drawingColor)
         {
 
             // Draw the bones
@@ -226,10 +232,6 @@ namespace KinectKannon.Rendering
             foreach (JointType jointType in joints.Keys)
             {
                 Color drawColor = this.trackedJointColor;
-                if (targeted && jointType == JointType.SpineMid)
-                {
-
-                }
                 
 
                 TrackingState trackingState = joints[jointType].TrackingState;
@@ -250,6 +252,65 @@ namespace KinectKannon.Rendering
             }
         }
 
+        public void DrawBodies(Body[] bodies, CoordinateMapper coordinateMapper, int? targetIndex)
+        {
+            // Draw a transparent background to set the render size
+            this.imageSource.DrawRectangle(0, 0, this.displayWidth, this.displayHeight, Color.FromArgb(255, 128, 128, 128));
+            int count = 0;
+            foreach (Body body in bodies)
+            {
+                if (body.IsTracked)
+                {
+                    this.DrawClippedEdges(body);
+
+                    IReadOnlyDictionary<JointType, Joint> joints = body.Joints;
+
+                    // convert the joint points to depth (display) space
+                    Dictionary<JointType, Point> jointPoints = new Dictionary<JointType, Point>();
+
+                    foreach (JointType jointType in joints.Keys)
+                    {
+                        
+                        // sometimes the depth(Z) of an inferred joint may show as negative
+                        // clamp down to 0.1f to prevent coordinatemapper from returning (-Infinity, -Infinity)
+                        CameraSpacePoint position = joints[jointType].Position;
+                        if (position.Z < 0)
+                        {
+                            position.Z = InferredZPositionClamp;
+                        }
+
+                        DepthSpacePoint depthSpacePoint = coordinateMapper.MapCameraPointToDepthSpace(position);
+                        
+
+                        //convert joint space to color space so that we can draw skeletons on top of color feed
+                        jointPoints[jointType] = new Point((depthSpacePoint.X / this.jointDisplayWidth) * 1920, (depthSpacePoint.Y / this.jointDisplayHeight) * 1080);
+
+                        //check if this is the skeleton that has been targeted by system
+                        //if it is we'll draw a big red circle on the skelton chest
+                        if (targetIndex != null && targetIndex == count)
+                        {
+                            if (jointType == JointType.Neck)
+                            {
+                                var joint = jointPoints[jointType];
+
+                                this.imageSource.FillEllipse((int)joint.X, (int)joint.Y, (int)joint.X + 50, (int)joint.Y + 50, Color.FromArgb(128, 255, 0, 0));
+                            }
+                        }
+                    }
+
+                    this.DrawBody(joints, jointPoints, this.trackedJointColor);
+
+                    this.DrawHand(body.HandLeftState, jointPoints[JointType.HandLeft]);
+                    this.DrawHand(body.HandRightState, jointPoints[JointType.HandRight]);
+
+                    count++;
+                }
+
+                
+            }
+            // prevent drawing outside of our render area
+            //this.drawingGroup.ClipGeometry = new RectangleGeometry(new Rect(0.0, 0.0, this.displayWidth, this.displayHeight));
+        }
         /// <summary>
         /// Draws one bone of a body (joint to joint)
         /// </summary>
