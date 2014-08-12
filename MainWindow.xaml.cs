@@ -45,6 +45,8 @@ namespace KinectKannon
         /// </summary>
         private ColorFrameReader colorFrameReader = null;
 
+        private AudioBeamFrameReader audioReader = null;
+
         /// <summary>
         /// Array for the bodies
         /// </summary>
@@ -94,6 +96,21 @@ namespace KinectKannon
 
         private string statusText = null;
 
+        /// <summary>
+        /// Last observed audio beam angle in radians, in the range [-pi/2, +pi/2]
+        /// </summary>
+        private float beamAngle = 0;
+
+        /// <summary>
+        /// Last observed audio beam angle confidence, in the range [0, 1]
+        /// </summary>
+        private float beamAngleConfidence = 0;
+
+        /// <summary>
+        /// Will be allocated a buffer to hold a single sub frame of audio data read from audio stream.
+        /// </summary>
+        private readonly byte[] audioBuffer = null;
+
         public MainWindow()
         {
             // one sensor is currently supported
@@ -107,6 +124,8 @@ namespace KinectKannon
 
             this.colorFrameReader = this.kinectSensor.ColorFrameSource.OpenReader();
 
+            this.audioReader = this.kinectSensor.AudioSource.OpenReader();
+
             // get the depth (display) extents
             FrameDescription jointFrameDescription = this.kinectSensor.DepthFrameSource.FrameDescription;
             
@@ -117,7 +136,16 @@ namespace KinectKannon
             var drawingImage = new DrawingImage(drawingGroup);
             hudRenderer = new HudRenderer(drawingGroup, drawingImage, colorFrameDescription.Width, colorFrameDescription.Height);
 
+            AudioSource audioSource = this.kinectSensor.AudioSource;
+
+            // Allocate 1024 bytes to hold a single audio sub frame. Duration sub frame 
+            // is 16 msec, the sample rate is 16khz, which means 256 samples per sub frame. 
+            // With 4 bytes per sample, that gives us 1024 bytes.
+            this.audioBuffer = new byte[audioSource.SubFrameLengthInBytes];
+
             this.colorFrameReader.FrameArrived += this.Reader_ColorFrameArrived;
+
+            this.audioReader.FrameArrived += audioReader_FrameArrived;
 
             // set IsAvailableChanged event notifier
             this.kinectSensor.IsAvailableChanged += this.Sensor_IsAvailableChanged;
@@ -153,6 +181,80 @@ namespace KinectKannon
             FPSTimerStart();
         }
 
+        void audioReader_FrameArrived(object sender, AudioBeamFrameArrivedEventArgs e)
+        {
+            AudioBeamFrameReference frameReference = e.FrameReference;
+
+            try
+            {
+                AudioBeamFrameList frameList = frameReference.AcquireBeamFrames();
+
+                if (frameList != null)
+                {
+                    // AudioBeamFrameList is IDisposable
+                    using (frameList)
+                    {
+                        // Only one audio beam is supported. Get the sub frame list for this beam
+                        IReadOnlyList<AudioBeamSubFrame> subFrameList = frameList[0].SubFrames;
+
+                        // Loop over all sub frames, extract audio buffer and beam information
+                        foreach (AudioBeamSubFrame subFrame in subFrameList)
+                        {
+                            // Check if beam angle and/or confidence have changed
+                            bool updateBeam = false;
+
+                            if (subFrame.BeamAngle != this.beamAngle)
+                            {
+                                this.beamAngle = subFrame.BeamAngle;
+                                updateBeam = true;
+                            }
+
+                            if (subFrame.BeamAngleConfidence != this.beamAngleConfidence)
+                            {
+                                this.beamAngleConfidence = subFrame.BeamAngleConfidence;
+                                updateBeam = true;
+                            }
+
+                            if (updateBeam)
+                            {
+                                // Refresh display of audio beam
+                                this.AudioBeamChanged();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore if the frame is no longer available
+            }
+        }
+
+        /// <summary>
+        /// Method called when audio beam angle and/or confidence have changed.
+        /// </summary>
+        private void AudioBeamChanged()
+        {
+            // Maximum possible confidence corresponds to this gradient width
+            const float MinGradientWidth = 0.04f;
+
+            // Set width of mark based on confidence.
+            // A confidence of 0 would give us a gradient that fills whole area diffusely.
+            // A confidence of 1 would give us the narrowest allowed gradient width.
+            float halfWidth = Math.Max(1 - this.beamAngleConfidence, MinGradientWidth) / 2;
+
+            // Update the gradient representing sound source position to reflect confidence
+            this.beamBarGsPre.Offset = Math.Max(this.beamBarGsMain.Offset - halfWidth, 0);
+            this.beamBarGsPost.Offset = Math.Min(this.beamBarGsMain.Offset + halfWidth, 1);
+
+            // Convert from radians to degrees for display purposes
+            float beamAngleInDeg = this.beamAngle * 180.0f / (float)Math.PI;
+
+            // Rotate gradient to match angle
+            beamBarRotation.Angle = -beamAngleInDeg;
+            beamNeedleRotation.Angle = -beamAngleInDeg;
+        }
+
         private void SetupKeyHandlers()
         {
             KeyDown += MainWindow_KeyDown;
@@ -185,14 +287,17 @@ namespace KinectKannon
             else if (e.Key == Key.NumPad1 || e.Key == Key.D1)
             {
                 this.trackingMode = TrackingMode.MANUAL;
+                AudioViewBox.Visibility = Visibility.Hidden;
             }
             else if (e.Key == Key.NumPad2 || e.Key == Key.D2)
             {
                 this.trackingMode = TrackingMode.SKELETAL;
+                AudioViewBox.Visibility = Visibility.Hidden;
             }
             else if (e.Key == Key.NumPad3 || e.Key == Key.D3)
             {
                 this.trackingMode = TrackingMode.AUDIBLE;
+                AudioViewBox.Visibility = Visibility.Visible;
             }
             else if (this.trackingMode == TrackingMode.SKELETAL &&
                 e.Key == Key.A)
