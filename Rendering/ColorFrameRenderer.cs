@@ -252,12 +252,11 @@ namespace KinectKannon.Rendering
             }
         }
 
-        public void DrawBodies(Body[] bodies, CoordinateMapper coordinateMapper)
+        public void DrawBodies(Body[] bodies, CoordinateMapper coordinateMapper, int? targetIndex)
         {
             // Draw a transparent background to set the render size
             this.imageSource.DrawRectangle(0, 0, this.displayWidth, this.displayHeight, Color.FromArgb(255, 128, 128, 128));
-
-
+            int count = 0;
             foreach (Body body in bodies)
             {
                 if (body.IsTracked)
@@ -271,6 +270,7 @@ namespace KinectKannon.Rendering
 
                     foreach (JointType jointType in joints.Keys)
                     {
+                        
                         // sometimes the depth(Z) of an inferred joint may show as negative
                         // clamp down to 0.1f to prevent coordinatemapper from returning (-Infinity, -Infinity)
                         CameraSpacePoint position = joints[jointType].Position;
@@ -280,15 +280,33 @@ namespace KinectKannon.Rendering
                         }
 
                         DepthSpacePoint depthSpacePoint = coordinateMapper.MapCameraPointToDepthSpace(position);
-                        //convert joint space to colro space so that we can draw skeletons on top of color feed
+                        
+
+                        //convert joint space to color space so that we can draw skeletons on top of color feed
                         jointPoints[jointType] = new Point((depthSpacePoint.X / this.jointDisplayWidth) * 1920, (depthSpacePoint.Y / this.jointDisplayHeight) * 1080);
+
+                        //check if this is the skeleton that has been targeted by system
+                        //if it is we'll draw a big red circle on the skelton chest
+                        if (targetIndex != null && targetIndex == count)
+                        {
+                            if (jointType == JointType.Neck)
+                            {
+                                var joint = jointPoints[jointType];
+
+                                this.imageSource.FillEllipse((int)joint.X, (int)joint.Y, (int)joint.X + 50, (int)joint.Y + 50, Color.FromArgb(128, 255, 0, 0));
+                            }
+                        }
                     }
 
                     this.DrawBody(joints, jointPoints, this.trackedJointColor);
 
                     this.DrawHand(body.HandLeftState, jointPoints[JointType.HandLeft]);
                     this.DrawHand(body.HandRightState, jointPoints[JointType.HandRight]);
+
+                    count++;
                 }
+
+                
             }
             // prevent drawing outside of our render area
             //this.drawingGroup.ClipGeometry = new RectangleGeometry(new Rect(0.0, 0.0, this.displayWidth, this.displayHeight));

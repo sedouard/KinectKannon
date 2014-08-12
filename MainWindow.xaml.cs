@@ -68,6 +68,11 @@ namespace KinectKannon
         private TrackingMode trackingMode = TrackingMode.MANUAL;
 
         /// <summary>
+        /// The skeleton that is requested to be tracked
+        /// </summary>
+        private SkeletalLetter requestedTrackedSkeleton = SkeletalLetter.A;
+
+        /// <summary>
         /// The frame rate that will be displayed.
         /// </summary>
         private double debugFrameRate = 0.0f;
@@ -188,6 +193,16 @@ namespace KinectKannon
             else if (e.Key == Key.NumPad3 || e.Key == Key.D3)
             {
                 this.trackingMode = TrackingMode.AUDIBLE;
+            }
+            else if (this.trackingMode == TrackingMode.SKELETAL &&
+                e.Key == Key.A)
+            {
+                this.requestedTrackedSkeleton = SkeletalLetter.A;
+            }
+            else if (this.trackingMode == TrackingMode.SKELETAL &&
+                e.Key == Key.B)
+            {
+                this.requestedTrackedSkeleton = SkeletalLetter.B;
             }
         }
 
@@ -362,7 +377,13 @@ namespace KinectKannon
 
             if (dataReceived)
             {
-                colorRenderer.DrawBodies(this.bodies, this.coordinateMapper);
+                int? trackIndex = null;
+                if((int)requestedTrackedSkeleton < this.bodies.Length 
+                    && this.trackingMode == TrackingMode.SKELETAL){
+                    trackIndex = (int)requestedTrackedSkeleton;
+                }
+
+                colorRenderer.DrawBodies(this.bodies, this.coordinateMapper, trackIndex);
             }
         }
 
