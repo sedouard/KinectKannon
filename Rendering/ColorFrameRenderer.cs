@@ -91,18 +91,29 @@ namespace KinectKannon.Rendering
         /// </summary>
         private int displayHeight;
 
+        private int jointDisplayWidth;
+
+        private int jointDisplayHeight;
+
         /// <summary>
         /// The bitmap used to stream the camera
         /// </summary>
         private WriteableBitmap imageSource;
 
+        /// <summary>
+        /// Constant for clamping Z values of camera space points from being negative
+        /// </summary>
+        private const float InferredZPositionClamp = 0.1f;
 
-        public ColorFrameRenderer(int frameWidth, int frameHeight)
+        public ColorFrameRenderer(int frameWidth, int frameHeight, int jointFrameWidth, int jointFrameHeight)
         {
             // allocate space to put the pixels to be rendered
             this.colorPixels = new byte[frameWidth * frameHeight * this.bytesPerPixel];
             this.displayWidth = frameWidth;
             this.displayHeight = frameHeight;
+            this.jointDisplayWidth = jointFrameWidth;
+            this.jointDisplayHeight = jointFrameHeight;
+
 
             // a bone defined as a line between two joints
             this.bones = new List<Tuple<JointType, JointType>>();
@@ -241,6 +252,47 @@ namespace KinectKannon.Rendering
             }
         }
 
+        public void DrawBodies(Body[] bodies, CoordinateMapper coordinateMapper)
+        {
+            // Draw a transparent background to set the render size
+            this.imageSource.DrawRectangle(0, 0, this.displayWidth, this.displayHeight, Color.FromArgb(255, 128, 128, 128));
+
+
+            foreach (Body body in bodies)
+            {
+                if (body.IsTracked)
+                {
+                    this.DrawClippedEdges(body);
+
+                    IReadOnlyDictionary<JointType, Joint> joints = body.Joints;
+
+                    // convert the joint points to depth (display) space
+                    Dictionary<JointType, Point> jointPoints = new Dictionary<JointType, Point>();
+
+                    foreach (JointType jointType in joints.Keys)
+                    {
+                        // sometimes the depth(Z) of an inferred joint may show as negative
+                        // clamp down to 0.1f to prevent coordinatemapper from returning (-Infinity, -Infinity)
+                        CameraSpacePoint position = joints[jointType].Position;
+                        if (position.Z < 0)
+                        {
+                            position.Z = InferredZPositionClamp;
+                        }
+
+                        DepthSpacePoint depthSpacePoint = coordinateMapper.MapCameraPointToDepthSpace(position);
+                        //convert joint space to colro space so that we can draw skeletons on top of color feed
+                        jointPoints[jointType] = new Point((depthSpacePoint.X / this.jointDisplayWidth) * 1920, (depthSpacePoint.Y / this.jointDisplayHeight) * 1080);
+                    }
+
+                    this.DrawBody(joints, jointPoints, this.trackedJointColor);
+
+                    this.DrawHand(body.HandLeftState, jointPoints[JointType.HandLeft]);
+                    this.DrawHand(body.HandRightState, jointPoints[JointType.HandRight]);
+                }
+            }
+            // prevent drawing outside of our render area
+            //this.drawingGroup.ClipGeometry = new RectangleGeometry(new Rect(0.0, 0.0, this.displayWidth, this.displayHeight));
+        }
         /// <summary>
         /// Draws one bone of a body (joint to joint)
         /// </summary>

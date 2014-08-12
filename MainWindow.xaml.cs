@@ -24,80 +24,6 @@ namespace KinectKannon
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        /// <summary>
-        /// Radius of drawn hand circles
-        /// </summary>
-        private const double HandSize = 30;
-
-        /// <summary>
-        /// Thickness of drawn joint lines
-        /// </summary>
-        private const double JointThickness = 10;
-
-        /// <summary>
-        /// Thickness of clip edge rectangles
-        /// </summary>
-        private const int ClipBoundsThickness = 10;
-
-        /// <summary>
-        /// Constant for clamping Z values of camera space points from being negative
-        /// </summary>
-        private const float InferredZPositionClamp = 0.1f;
-
-        /// <summary>
-        /// Brush used for drawing hands that are currently tracked as closed
-        /// </summary>
-        private readonly Color handClosedColor = Color.FromArgb(128, 255, 0, 0);
-
-        /// <summary>
-        /// Brush used for drawing hands that are currently tracked as opened
-        /// </summary>
-        private readonly Color handOpenColor = Color.FromArgb(128, 0, 255, 0);
-
-        /// <summary>
-        /// Brush used to draw cross Hairs
-        /// </summary>
-        private readonly Color crossHairColor = Color.FromArgb(128, 0, 0, 0);
-
-        /// <summary>
-        /// Brush used for drawing hands that are currently tracked as in lasso (pointer) position
-        /// </summary>
-        private readonly Color handLassoColor = Color.FromArgb(128, 0, 0, 255);
-
-        /// <summary>
-        /// Brush used for drawing joints that are currently tracked
-        /// </summary>
-        private readonly Color trackedJointColor = Color.FromArgb(255, 68, 192, 68);
-
-        /// <summary>
-        /// Brush used for drawing joints that are currently inferred (yellow)
-        /// </summary>        
-        private readonly Color inferredJointColor = Color.FromArgb(255, 248, 254, 12);
-
-        /// <summary>
-        /// Pen used for drawing bones that are currently inferred
-        /// </summary>        
-        private readonly Color inferredBoneColor = Color.FromArgb(255, 133, 128, 138);
-
-        /// <summary>
-        /// Size of the RGB pixel in the bitmap
-        /// </summary>
-        private readonly uint bytesPerPixel = 0;
-
-        /// <summary>
-        /// The bitmap used to stream the camera
-        /// </summary>
-        private WriteableBitmap imageSource;
-
-        /// <summary>
-        /// The bitmap used to stream the camera
-        /// </summary>
-        private DrawingGroup hudDrawingGroup;
-
-        /// <summary>
-        /// The bitmap used to stream the camera
-        /// </summary>
-        private DrawingImage hudSource;
 
         /// <summary>
         /// Active Kinect sensor
@@ -125,31 +51,6 @@ namespace KinectKannon
         private Body[] bodies = null;
 
         /// <summary>
-        /// Width of display (depth space)
-        /// </summary>
-        private int jointDisplayWidth;
-
-        /// <summary>
-        /// Height of display (depth space)
-        /// </summary>
-        private int jointDisplayHeight;
-
-        /// <summary>
-        /// Width of display (color space)
-        /// </summary>
-        private int displayWidth;
-
-        /// <summary>
-        /// Height of display (color space)
-        /// </summary>
-        private int displayHeight;
-
-        /// <summary>
-        /// Current status text to display
-        /// </summary>
-        private string statusText = null;
-
-        /// <summary>
         /// Describes an arbitrary number which represents how far left or right the cannon is position
         /// This range of this value is TBD
         /// </summary>
@@ -161,6 +62,9 @@ namespace KinectKannon
         /// </summary>
         private double cannonYPosition = 0.0f;
 
+        /// <summary>
+        /// The current tracking mode of the system
+        /// </summary>
         private TrackingMode trackingMode = TrackingMode.MANUAL;
 
         /// <summary>
@@ -176,8 +80,15 @@ namespace KinectKannon
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
         /// 
-
         private ColorFrameRenderer colorRenderer;
+
+        /// <summary>
+        /// Responsible for drawing the HUD layer
+        /// </summary>
+        private HudRenderer hudRenderer;
+
+        private string statusText = null;
+
         public MainWindow()
         {
             // one sensor is currently supported
@@ -192,34 +103,14 @@ namespace KinectKannon
             this.colorFrameReader = this.kinectSensor.ColorFrameSource.OpenReader();
 
             // get the depth (display) extents
-            FrameDescription frameDescription = this.kinectSensor.DepthFrameSource.FrameDescription;
-
-            // get size of joint space
-            this.jointDisplayWidth = frameDescription.Width;
-            this.jointDisplayHeight = frameDescription.Height;
-            
-            //setup the drawing area for the HUD
-            this.hudDrawingGroup = new DrawingGroup();
-
-            this.hudSource = new DrawingImage(this.hudDrawingGroup);
+            FrameDescription jointFrameDescription = this.kinectSensor.DepthFrameSource.FrameDescription;
             
             FrameDescription colorFrameDescription = this.kinectSensor.ColorFrameSource.CreateFrameDescription(ColorImageFormat.Bgra);
 
-            // create the bitmap to display
-            this.imageSource = new WriteableBitmap(colorFrameDescription.Width, colorFrameDescription.Height, 96.0, 96.0, PixelFormats.Pbgra32, null);
-
-            // rgba is 4 bytes per pixel
-            this.bytesPerPixel = colorFrameDescription.BytesPerPixel;
-
-            
-            // get size of picture space
-            this.displayWidth = colorFrameDescription.Width;
-            this.displayHeight = colorFrameDescription.Height;
-
-            // wire handler for frame arrival
-            //this.colorFrameReader.FrameArrived += this.Reader_ColorFrameArrived;
-
-            colorRenderer = new ColorFrameRenderer(colorFrameDescription.Width, colorFrameDescription.Height);
+            colorRenderer = new ColorFrameRenderer(colorFrameDescription.Width, colorFrameDescription.Height, jointFrameDescription.Width, jointFrameDescription.Height);
+            var drawingGroup = new DrawingGroup();
+            var drawingImage = new DrawingImage(drawingGroup);
+            hudRenderer = new HudRenderer(drawingGroup, drawingImage, colorFrameDescription.Width, colorFrameDescription.Height);
 
             this.colorFrameReader.FrameArrived += this.Reader_ColorFrameArrived;
 
@@ -243,7 +134,15 @@ namespace KinectKannon
             SetupKeyHandlers();
 
             //draw the headsup display initially
-            RenderHud();
+            this.hudRenderer.RenderHud(new HudRenderingParameters()
+            {
+                CannonX = this.CannonX,
+                CannonY = this.CannonY,
+                StatusText = this.statusText,
+                SystemReady = (this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen),
+                FrameRate = this.FrameRate,
+                TrackingMode = this.trackingMode
+            });
 
             //debug start frame rate counter
             FPSTimerStart();
@@ -254,6 +153,11 @@ namespace KinectKannon
             KeyDown += MainWindow_KeyDown;
         }
 
+        /// <summary>
+        /// Handles an 'controller' actions using the keyboard interface
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void MainWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             //TODO: This is where the logic for controlling the servos will be placed
@@ -294,50 +198,20 @@ namespace KinectKannon
         /// <param name="e">event arguments</param>
         private void Reader_ColorFrameArrived(object sender, ColorFrameArrivedEventArgs e)
         {
-
+            //render color layer
             this.colorRenderer.Reader_ColorFrameArrived(sender, e);
             elapsedFrames++;
-            RenderHud();
-        }
-
-        private void RenderHud()
-        {
-            using (DrawingContext dc = this.hudDrawingGroup.Open())
+            //draw the headsup display initially
+            this.hudRenderer.RenderHud(new HudRenderingParameters()
             {
-                // Draw a transparent background to set the render size
-                dc.DrawRectangle(Brushes.Transparent, null, new Rect(0.0, 0.0, this.displayWidth, this.displayHeight));
-                var statusBrush = Brushes.Green;
-                if (!(kinectSensor.IsAvailable && kinectSensor.IsOpen))
-                {
-                    statusBrush = Brushes.Red;
-                }
-
-                //frame rate
-                RenderHudText(dc, "FPS: " + this.FrameRate, Brushes.White, 20, new Point(1800, 0));
-                //System Status
-                RenderHudText(dc, "System Status: " + this.statusText, statusBrush, 20, new System.Windows.Point(0, 0));
-                //Cannon Properties
-                RenderHudText(dc, "Cannon Status: ", Brushes.White, 40, new Point(0,120));
-                RenderHudText(dc, "X Position: " + this.CannonX, Brushes.YellowGreen, 20, new Point(0, 180));
-                RenderHudText(dc, "Y Position: " + this.CannonY, Brushes.YellowGreen, 20, new Point(0, 200));
-
-                dc.DrawRectangle(new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new Pen(), new Rect(10, 300, 300, 300));
-                RenderHudText(dc, "Tracking Mode", Brushes.White, 20, new Point(80, 310));
-                RenderHudText(dc, trackingMode.ToString(), Brushes.YellowGreen, 40, new Point(70, 420));
-            }
+                CannonX = this.CannonX,
+                CannonY = this.CannonY,
+                StatusText = this.statusText,
+                SystemReady = (this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen),
+                FrameRate = this.FrameRate,
+                TrackingMode = this.trackingMode
+            });
         }
-
-        private void RenderHudText(DrawingContext dc, string text, Brush color, int fontSize, Point location)
-        {
-            //frame rate
-            dc.DrawText(new FormattedText(text,
-                      CultureInfo.GetCultureInfo("en-us"),
-                      FlowDirection.LeftToRight,
-                      new Typeface("Verdana"),
-                      fontSize, color),
-                      location);
-        }
-     
 
         private void FPSTimerStart()
         {
@@ -374,7 +248,7 @@ namespace KinectKannon
         {
             get
             {
-                return this.hudSource;
+                return this.hudRenderer.ImageSource;
             }
         }
 
@@ -488,44 +362,7 @@ namespace KinectKannon
 
             if (dataReceived)
             {
-                // Draw a transparent background to set the render size
-                this.imageSource.DrawRectangle(0, 0, this.displayWidth, this.displayHeight, Color.FromArgb(255, 128,128,128));
-                
-                
-                foreach (Body body in this.bodies)
-                {
-                    if (body.IsTracked)
-                    {
-                        this.colorRenderer.DrawClippedEdges(body);
-
-                        IReadOnlyDictionary<JointType, Joint> joints = body.Joints;
-
-                        // convert the joint points to depth (display) space
-                        Dictionary<JointType, Point> jointPoints = new Dictionary<JointType, Point>();
-
-                        foreach (JointType jointType in joints.Keys)
-                        {
-                            // sometimes the depth(Z) of an inferred joint may show as negative
-                            // clamp down to 0.1f to prevent coordinatemapper from returning (-Infinity, -Infinity)
-                            CameraSpacePoint position = joints[jointType].Position;
-                            if (position.Z < 0)
-                            {
-                                position.Z = InferredZPositionClamp;
-                            }
-
-                            DepthSpacePoint depthSpacePoint = this.coordinateMapper.MapCameraPointToDepthSpace(position);
-                            //convert joint space to colro space so that we can draw skeletons on top of color feed
-                            jointPoints[jointType] = new Point((depthSpacePoint.X / this.jointDisplayWidth) * 1920, (depthSpacePoint.Y / this.jointDisplayHeight) * 1080);
-                        }
-
-                        this.colorRenderer.DrawBody(joints, jointPoints, this.trackedJointColor);
-
-                        this.colorRenderer.DrawHand(body.HandLeftState, jointPoints[JointType.HandLeft]);
-                        this.colorRenderer.DrawHand(body.HandRightState, jointPoints[JointType.HandRight]);
-                    }
-                }
-                // prevent drawing outside of our render area
-                //this.drawingGroup.ClipGeometry = new RectangleGeometry(new Rect(0.0, 0.0, this.displayWidth, this.displayHeight));
+                colorRenderer.DrawBodies(this.bodies, this.coordinateMapper);
             }
         }
 
@@ -541,13 +378,12 @@ namespace KinectKannon
                                                             : Microsoft.Samples.Kinect.BodyBasics.Properties.Resources.SensorNotAvailableStatusText;
         }
 
-        enum TrackingMode
-        {
-            MANUAL,
-            SKELETAL,
-            AUDIBLE
-        }
     }
+
+    /// <summary>
+    /// Used to determine which skeleton will be tracked if in SKELETAL tracking
+    /// mode
+    /// </summary>
     public enum SkeletalLetter
     {
         A = 0,
@@ -556,5 +392,16 @@ namespace KinectKannon
         D,
         E,
         F
+    }
+
+    /// <summary>
+    /// The tracking state of the system. Used to determine if pan/tilt will be controlled
+    /// autonomously or manually
+    /// </summary>
+    public enum TrackingMode
+    {
+        MANUAL,
+        SKELETAL,
+        AUDIBLE
     }
 }
