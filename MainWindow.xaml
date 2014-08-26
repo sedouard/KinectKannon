@@ -73,7 +73,7 @@
             <Ellipse Width="1"
                      Height="1"
                      Margin="25,0,25,0"
-                     Fill="Azure"
+                     Fill="BlueViolet"
                      Opacity=".85" />
         </Viewbox>
 
