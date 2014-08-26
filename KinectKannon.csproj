@@ -92,6 +92,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Autonomy\AudioAutonomy.cs" />
+    <Compile Include="Autonomy\SkeletalAutonomy.cs" />
     <Compile Include="Rendering\ColorFrameRenderer.cs" />
     <Compile Include="Rendering\HudRenderer.cs" />
     <Page Include="MainWindow.xaml">

@@ -19,6 +19,7 @@ namespace KinectKannon
     using System.Timers;
     using System.Windows.Input;
     using KinectKannon.Rendering;
+    using KinectKannon.Autonomy;
     /// <summary>
     /// Interaction logic for MainWindow
     /// </summary>
@@ -92,6 +93,12 @@ namespace KinectKannon
         /// <summary>
         /// Responsible for drawing the HUD layer
         /// </summary>
+        private SkeletalAutonomy skeletonAutomator = new SkeletalAutonomy();
+
+        /// <summary>
+        /// Responsible for calculating distance to center target threshold
+        /// </summary>
+       
         private HudRenderer hudRenderer;
 
         private string statusText = null;
@@ -461,6 +468,7 @@ namespace KinectKannon
         /// <param name="e">event arguments</param>
         private void Reader_FrameArrived(object sender, BodyFrameArrivedEventArgs e)
         {
+            int x = 0;
             bool dataReceived = false;
 
             using (BodyFrame bodyFrame = e.FrameReference.AcquireFrame())
@@ -490,6 +498,20 @@ namespace KinectKannon
 
                 if (this.trackingMode == TrackingMode.SKELETAL)
                 {
+                    
+                    //NATHANIEL Change this so that statement accounts for when 0 body is missing.
+                    if (trackIndex != null)
+                    {
+                        
+                        x = trackIndex ?? default(int);
+                        if (this.bodies[x].IsTracked)
+                        {
+                            skeletonAutomator.SkeletonAutonomy(this.bodies, trackIndex);
+                            this.cannonXPosition = skeletonAutomator.getXDist;
+                            this.cannonYPosition = skeletonAutomator.getYDist;
+                            
+                        }
+                    }
                     colorRenderer.DrawBodies(this.bodies, this.coordinateMapper, trackIndex);
                 }
                 

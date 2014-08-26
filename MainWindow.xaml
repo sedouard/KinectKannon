@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="KinectKannon.MainWindow"
         Title="Body Basics" 
-        Height="1361.493" Width="1754.412" 
+        Height="auto" Width="auto" 
         Loaded="MainWindow_Loaded"
         Closing="MainWindow_Closing">
     <Window.Resources>
@@ -31,7 +31,7 @@
         </Viewbox>
         <!--Scope-->
         <Viewbox Grid.Row="1" HorizontalAlignment="Center" Panel.ZIndex="1">
-            <Image Source="Images\ScopeImage.png" Stretch="UniformToFill" />
+            <Image Source="Images\ScopeImage.png" Stretch="UniformToFill" RenderTransformOrigin="0.517,0.501" />
         </Viewbox>
 
 
@@ -91,6 +91,12 @@
         </Viewbox>
         <StatusBar Grid.Row="2" HorizontalAlignment="Stretch" x:Name="statusBar" VerticalAlignment="Bottom" Background="White" Foreground="{StaticResource MediumGreyBrush}">
             <StatusBarItem Content="{Binding StatusText}" />
+            
         </StatusBar>
+        <Ellipse x:Name="targetEllipse" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="100" Margin="331,173,0,0" Grid.Row="1" Stroke="Black" StrokeThickness="5" VerticalAlignment="Top" Width="100" RenderTransformOrigin="0.53,0.485">
+            <Ellipse.BindingGroup>
+                <BindingGroup/>
+            </Ellipse.BindingGroup>
+        </Ellipse>
     </Grid>
 </Window>
