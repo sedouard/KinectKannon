@@ -18,17 +18,16 @@
         </Style>
         <Color x:Key="KinectPurpleColor">#ff52318f</Color>
     </Window.Resources>
-    
-    <Grid Margin="0 0 0 0"
-          Background="Black">
-        
+
+    <Grid Margin="0 0 0 0" Background="Black">
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!--Kinect Logo-->
+        <!--  Kinect Logo  -->
         <Image Grid.Row="0"
                Width="50"
                Margin="0 10 0 10"
@@ -36,8 +35,8 @@
                VerticalAlignment="Top"
                Source="Images\Logo.png"
                Stretch="Fill" />
-        
-        <!--Kinect Kannon Words-->
+
+        <!--  Kinect Kannon Words  -->
         <TextBlock Grid.Row="0"
                    Margin="0 0 -1 0"
                    HorizontalAlignment="Center"
@@ -46,31 +45,30 @@
                    FontSize="18"
                    Foreground="{StaticResource MediumGreyBrush}"><Run Text="Kinect Kannon" />
         </TextBlock>
-        
-        <!--Kinect Icon-->
+
+        <!--  Kinect Icon  -->
         <Image Grid.Row="0"
                Margin="10 10 10 10"
                HorizontalAlignment="Left"
                Source="Images\Status.png"
                Stretch="None" />
-        
+
         <!--  Camera Feed + Skeletons  -->
         <Viewbox Grid.Row="1" HorizontalAlignment="Center">
             <Image Source="{Binding ImageSource}" Stretch="UniformToFill" />
         </Viewbox>
-        
+
         <!--  Scope  -->
         <Viewbox Grid.Row="1"
                  HorizontalAlignment="Center"
-                 Panel.ZIndex="1"
-                 >
+                 Panel.ZIndex="1">
 
             <Image Opacity=".30"
                    Source="Images\ScopeWideTransparent2.png"
                    Stretch="UniformToFill" />
         </Viewbox>
-        
-        <!--The Laser Sight--> 
+
+        <!--  The Laser Sight  -->
         <Viewbox Grid.Row="1" HorizontalAlignment="Center">
             <Ellipse Width="1"
                      Height="1"
@@ -80,14 +78,14 @@
         </Viewbox>
 
 
-        <!--The Actual Image-->
+        <!--  The Actual Image  -->
         <Viewbox Grid.Row="1"
                  HorizontalAlignment="Center"
                  Panel.ZIndex="1">
             <Image Source="{Binding HudSource}" Stretch="UniformToFill" />
         </Viewbox>
-        
-        <!--Audio Hud View-->
+
+        <!--  Audio Hud View  -->
         <Viewbox x:Name="AudioViewBox"
                  Grid.Row="1"
                  Grid.RowSpan="2"
@@ -158,8 +156,8 @@
                       StrokeThickness="0.001" />
             </Canvas>
         </Viewbox>
-        
-        <!--The Status Bar (ie. What Mode are we in)--> 
+
+        <!--  The Status Bar (ie. What Mode are we in)  -->
         <StatusBar x:Name="statusBar"
                    Grid.Row="2"
                    HorizontalAlignment="Stretch"
@@ -168,7 +166,7 @@
                    Foreground="Red">
             <StatusBarItem Content="{Binding StatusText}" />
         </StatusBar>
-        
-        
+
+
     </Grid>
 </Window>
