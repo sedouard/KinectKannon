@@ -67,13 +67,18 @@ namespace KinectKannon.Rendering
                 //System Status
                 RenderHudText(dc, "System Status: " + renderingParams.StatusText, statusBrush, 20, new System.Windows.Point(0, 0));
                 //Cannon Properties
-                RenderHudText(dc, "Cannon Status: ", Brushes.White, 40, new Point(0, 120));
-                RenderHudText(dc, "X Position: " + renderingParams.CannonX, Brushes.YellowGreen, 20, new Point(0, 180));
-                RenderHudText(dc, "Y Position: " + renderingParams.CannonY, Brushes.YellowGreen, 20, new Point(0, 200));
+               
+                //Canon Status: XY Area 
+                dc.DrawRectangle(new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new Pen(), new Rect(0, 1150, 490, 65));
+                RenderHudText(dc, "Cannon Status: ", Brushes.YellowGreen, 40, new Point(0, 1150));
+                RenderHudText(dc, "X Position: " + renderingParams.CannonX, Brushes.YellowGreen, 20, new Point(320, 1155));
+                RenderHudText(dc, "Y Position: " + renderingParams.CannonY, Brushes.YellowGreen, 20, new Point(320, 1170));
 
-                dc.DrawRectangle(new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new Pen(), new Rect(10, 300, 300, 300));
-                RenderHudText(dc, "Tracking Mode", Brushes.White, 20, new Point(80, 310));
-                RenderHudText(dc, renderingParams.TrackingMode.ToString(), Brushes.YellowGreen, 40, new Point(70, 420));
+
+                //The Tracking Mode Area 
+                dc.DrawRectangle(new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new Pen(), new Rect(1800, 1150, 180, 65));
+                RenderHudText(dc, "Tracking Mode", Brushes.White , 20, new Point(1800, 1150));
+                RenderHudText(dc, renderingParams.TrackingMode.ToString(), Brushes.YellowGreen, 40, new Point(1800, 1170));
             }
         }
 
