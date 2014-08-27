@@ -65,6 +65,11 @@ namespace KinectKannon
         private double cannonYPosition = 0.0f;
 
         /// <summary>
+        /// Describes number which represents the theta angle, what direction from center the target is at. 
+        /// </summary>
+        private double cannonThetaPosition = 0.0f;
+
+        /// <summary>
         /// The current tracking mode of the system
         /// </summary>
         private TrackingMode trackingMode = TrackingMode.MANUAL;
@@ -393,6 +398,14 @@ namespace KinectKannon
             get
             {
                 return String.Format("{0:0.00}", this.cannonYPosition);
+            }
+        }
+
+        public string CannonTheta
+        {
+            get
+            {
+                return String.Format("{0.0}", this.cannonThetaPosition);
             }
         }
         /// <summary>
