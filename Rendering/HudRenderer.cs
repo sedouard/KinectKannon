@@ -77,7 +77,7 @@ namespace KinectKannon.Rendering
 
                 //The Tracking Mode Area 
                 dc.DrawRectangle(new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new Pen(), new Rect(1800, 1150, 180, 65));
-                RenderHudText(dc, "Tracking Mode", Brushes.White , 20, new Point(1800, 1150));
+                RenderHudText(dc, "Tracking Mode", new SolidColorBrush(Color.FromArgb(178, 48, 9, 0)), 20, new Point(1800, 1150));
                 RenderHudText(dc, renderingParams.TrackingMode.ToString(), Brushes.YellowGreen, 40, new Point(1800, 1170));
             }
         }
