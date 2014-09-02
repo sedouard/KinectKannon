@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KinectKannon", "KinectKannon.csproj", "{269A7B21-FBFE-4E7A-8BBE-C8DE2EC0D833}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KinectKannon.Tests", "..\KinectKannon.Tests\KinectKannon.Tests.csproj", "{C58240AD-0852-457F-88A1-CE14215C76D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{269A7B21-FBFE-4E7A-8BBE-C8DE2EC0D833}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{269A7B21-FBFE-4E7A-8BBE-C8DE2EC0D833}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{269A7B21-FBFE-4E7A-8BBE-C8DE2EC0D833}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C58240AD-0852-457F-88A1-CE14215C76D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C58240AD-0852-457F-88A1-CE14215C76D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C58240AD-0852-457F-88A1-CE14215C76D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C58240AD-0852-457F-88A1-CE14215C76D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
