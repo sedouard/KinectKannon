@@ -70,6 +70,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Kinect, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64" />
+    <Reference Include="Phidget21.NET, Version=2.1.8.185, Culture=neutral, PublicKeyToken=c2b1f2a3594bce52, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Program Files\Phidgets\Phidget21.NET.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -92,8 +96,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Autonomy\AudioAutonomy.cs" />
-    <Compile Include="Autonomy\SkeletalAutonomy.cs" />
+    <Compile Include="Control\PanTilt.cs" />
     <Compile Include="Rendering\ColorFrameRenderer.cs" />
     <Compile Include="Rendering\HudRenderer.cs" />
     <Page Include="MainWindow.xaml">
@@ -145,6 +148,18 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\ScopeImage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ScopeWide.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ScopeWideTransparent2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ScopeWideTransparentGreen.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Scope3.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

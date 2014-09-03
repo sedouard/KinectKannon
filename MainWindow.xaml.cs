@@ -19,7 +19,6 @@ namespace KinectKannon
     using System.Timers;
     using System.Windows.Input;
     using KinectKannon.Rendering;
-    using KinectKannon.Autonomy;
     /// <summary>
     /// Interaction logic for MainWindow
     /// </summary>
@@ -66,6 +65,11 @@ namespace KinectKannon
         private double cannonYPosition = 0.0f;
 
         /// <summary>
+        /// Describes number which represents the theta angle, what direction from center the target is at. 
+        /// </summary>
+        private double cannonThetaPosition = 0.0f;
+
+        /// <summary>
         /// The current tracking mode of the system
         /// </summary>
         private TrackingMode trackingMode = TrackingMode.MANUAL;
@@ -91,14 +95,8 @@ namespace KinectKannon
         private ColorFrameRenderer colorRenderer;
 
         /// <summary>
-        /// Responsible for finding skeletal XY positions of a tracked body's SpineMid.
+        /// Responsible for drawing the HUD layer
         /// </summary>
-        private SkeletalAutonomy skeletonAutomator = new SkeletalAutonomy();
-
-        /// <summary>
-        /// Responsible for calculating distance to center target threshold
-        /// </summary>
-       
         private HudRenderer hudRenderer;
 
         private string statusText = null;
@@ -402,6 +400,14 @@ namespace KinectKannon
                 return String.Format("{0:0.00}", this.cannonYPosition);
             }
         }
+
+        public string CannonTheta
+        {
+            get
+            {
+                return String.Format("{0.0}", this.cannonThetaPosition);
+            }
+        }
         /// <summary>
         /// Gets or sets the current status text to display
         /// </summary>
@@ -494,26 +500,9 @@ namespace KinectKannon
                     && this.trackingMode == TrackingMode.SKELETAL){
                     trackIndex = (int)requestedTrackedSkeleton;
                 }
-                // Count is used to iterate through Bodies[] and compared with the trackIndex.
-                int count = 0;
+
                 if (this.trackingMode == TrackingMode.SKELETAL)
                 {
-                    // Iterate through each body present in bodies[] and verify,
-                    // if body.isTracked is true. If true send body to skeletal autonomator,
-                    // to return X, Y, position and Theta angle of the SpineMid Joint.
-                    foreach (Body body in this.bodies)
-                    {
-                        if (body.IsTracked)
-                        {
-                            if(trackIndex != null && trackIndex == count)
-                            {
-                                skeletonAutomator.SkeletonAutonomy(this.bodies, trackIndex);
-                                this.cannonXPosition = skeletonAutomator.getXDist;
-                                this.cannonYPosition = skeletonAutomator.getYDist;
-                            }
-                        }
-                        count++;
-                    }
                     colorRenderer.DrawBodies(this.bodies, this.coordinateMapper, trackIndex);
                 }
                 

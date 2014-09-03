@@ -1,60 +1,121 @@
-﻿<Window
+﻿<Window x:Class="KinectKannon.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="KinectKannon.MainWindow"
-        Title="Body Basics" 
-        Height="auto" Width="auto" 
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        Title="Body Basics"
+        Width="1754.412"
+        Height="1361.493"
+        Closing="MainWindow_Closing"
         Loaded="MainWindow_Loaded"
-        Closing="MainWindow_Closing">
+        mc:Ignorable="d">
     <Window.Resources>
         <SolidColorBrush x:Key="MediumGreyBrush" Color="#ff6e6e6e" />
         <SolidColorBrush x:Key="KinectPurpleBrush" Color="#ff52318f" />
         <SolidColorBrush x:Key="KinectBlueBrush" Color="#ff00BCF2" />
         <Style TargetType="{x:Type Image}">
-            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="SnapsToDevicePixels" Value="True" />
         </Style>
         <Color x:Key="KinectPurpleColor">#ff52318f</Color>
     </Window.Resources>
-    <Grid Margin="10 0 10 0">
+
+    <Grid Margin="0 0 0 0" Background="Black">
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Image Grid.Row="0" Source="Images\Logo.png" HorizontalAlignment="Left" Stretch="Fill" Height="32" Width="81" Margin="0 10 0 5" />
-        <TextBlock Grid.Row="0" Margin="0 0 -1 0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Foreground="{StaticResource MediumGreyBrush}" FontFamily="Segoe UI" FontSize="18"><Run Text="Kinect Kannon"/></TextBlock>
-        <Image Grid.Row="0" Source="Images\Status.png" Stretch="None" HorizontalAlignment="Center" Margin="0 0 0 5" />
-        <!--Camera Feed + Skeletons-->
+        <!--  Kinect Logo  -->
+        <Image Grid.Row="0"
+               Width="50"
+               Margin="0 10 0 10"
+               HorizontalAlignment="Right"
+               VerticalAlignment="Top"
+               Source="Images\Logo.png"
+               Stretch="Fill" />
+
+        <!--  Kinect Kannon Words  -->
+        <TextBlock Grid.Row="0"
+                   Margin="0 0 -1 0"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Bottom"
+                   FontFamily="Segoe UI"
+                   FontSize="18"
+                   Foreground="{StaticResource MediumGreyBrush}"><Run Text="Kinect Kannon" />
+        </TextBlock>
+
+        <!--  Kinect Icon  -->
+        <Image Grid.Row="0"
+               Margin="10 10 10 10"
+               HorizontalAlignment="Left"
+               Source="Images\Status.png"
+               Stretch="None" />
+
+        <!--  Camera Feed + Skeletons  -->
         <Viewbox Grid.Row="1" HorizontalAlignment="Center">
             <Image Source="{Binding ImageSource}" Stretch="UniformToFill" />
         </Viewbox>
-        <!--Scope-->
-        <Viewbox Grid.Row="1" HorizontalAlignment="Center" Panel.ZIndex="1">
-            <Image Source="Images\ScopeImage.png" Stretch="UniformToFill" RenderTransformOrigin="0.517,0.501" />
+
+        <!--  Scope  -->
+        <Viewbox Grid.Row="1"
+                 HorizontalAlignment="Center"
+                 Panel.ZIndex="1">
+
+            <Image Opacity=".30"
+                   Source="Images\Scope3.png"
+                   Stretch="UniformToFill" />
+        </Viewbox>
+
+        <!--  The Laser Sight  -->
+        <Viewbox Grid.Row="1" HorizontalAlignment="Center">
+            <Ellipse Width="1"
+                     Height="1"
+                     Margin="25,0,25,0"
+                     Fill="#1948FF"
+                     Opacity=".85" />
         </Viewbox>
 
 
-        <Viewbox Grid.Row="1" HorizontalAlignment="Center" Panel.ZIndex="1">
+        <!--  The Actual Image  -->
+        <Viewbox Grid.Row="1"
+                 HorizontalAlignment="Center"
+                 Panel.ZIndex="1">
             <Image Source="{Binding HudSource}" Stretch="UniformToFill" />
         </Viewbox>
-        <Viewbox x:Name="AudioViewBox" Stretch="Uniform" Panel.ZIndex="2" HorizontalAlignment="Center" Width="1978" Margin="-103,4.8,-147,-169" Grid.RowSpan="2" Grid.Row="1" Visibility="Hidden" OpacityMask="Black">
-            <Canvas Width="1" Height="1" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" Margin="0">
+
+        <!--  Audio Hud View  -->
+        <Viewbox x:Name="AudioViewBox"
+                 Grid.Row="1"
+                 Grid.RowSpan="2"
+                 Width="1978"
+                 Margin="-103,4.8,-147,-169"
+                 HorizontalAlignment="Center"
+                 Panel.ZIndex="2"
+                 OpacityMask="Black"
+                 Stretch="Uniform"
+                 Visibility="Hidden">
+            <Canvas Width="1"
+                    Height="1"
+                    Margin="0"
+                    HorizontalAlignment="Center"
+                    RenderTransformOrigin="0.5,0.5">
                 <Canvas.RenderTransform>
                     <TransformGroup>
-                        <ScaleTransform/>
-                        <SkewTransform/>
-                        <RotateTransform Angle="179.497"/>
-                        <TranslateTransform/>
+                        <ScaleTransform />
+                        <SkewTransform />
+                        <RotateTransform Angle="179.497" />
+                        <TranslateTransform />
                     </TransformGroup>
                 </Canvas.RenderTransform>
                 <Path Data="M 0.1503,0.2832 L 0.228,0.2203 A 0.35,0.35 102 0 0 0.772,0.2203 L 0.8497,0.2832 A 0.45,0.45 102 0 1 0.1503,0.2832 Z">
                     <Path.Fill>
                         <RadialGradientBrush Center="0.5 -0.32" RadiusX="0.65" RadiusY="1.1">
-                            <GradientStop Color="LightGray" Offset="0"/>
-                            <GradientStop Color="LightGray" Offset="0.4"/>
-                            <GradientStop Color="WhiteSmoke" Offset="0.6"/>
-                            <GradientStop Color="WhiteSmoke" Offset="1"/>
+                            <GradientStop Offset="0" Color="LightGray" />
+                            <GradientStop Offset="0.4" Color="LightGray" />
+                            <GradientStop Offset="0.6" Color="WhiteSmoke" />
+                            <GradientStop Offset="1" Color="WhiteSmoke" />
                         </RadialGradientBrush>
                     </Path.Fill>
                 </Path>
@@ -62,41 +123,50 @@
                     <Path.Fill>
                         <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
                             <LinearGradientBrush.Transform>
-                                <RotateTransform x:Name="beamBarRotation" CenterX="0.5" CenterY="0.0" Angle="0"/>
+                                <RotateTransform x:Name="beamBarRotation" Angle="0" CenterX="0.5" CenterY="0.0" />
                             </LinearGradientBrush.Transform>
-                            <GradientStop x:Name="beamBarGsStart"  Color="#7FFFFFFF"   Offset="0" />
-                            <GradientStop x:Name="beamBarGsPre"    Color="#7FFFFFFF"   Offset="0.45" />
-                            <GradientStop x:Name="beamBarGsMain"   Color="#7F52318F"  Offset="0.5" />
-                            <GradientStop x:Name="beamBarGsPost"   Color="#7FFFFFFF"   Offset="0.55" />
-                            <GradientStop x:Name="beamBarGsEnd"    Color="#7FFFFFFF"   Offset="1" />
+                            <GradientStop x:Name="beamBarGsStart" Offset="0" Color="#7FFFFFFF" />
+                            <GradientStop x:Name="beamBarGsPre" Offset="0.45" Color="#7FFFFFFF" />
+                            <GradientStop x:Name="beamBarGsMain" Offset="0.5" Color="#7F52318F" />
+                            <GradientStop x:Name="beamBarGsPost" Offset="0.55" Color="#7FFFFFFF" />
+                            <GradientStop x:Name="beamBarGsEnd" Offset="1" Color="#7FFFFFFF" />
                         </LinearGradientBrush>
                     </Path.Fill>
                 </Path>
                 <Path Data="M 0.495,0.35 L 0.505,0.35 L 0.5,0.44 Z">
                     <Path.RenderTransform>
-                        <RotateTransform x:Name="beamNeedleRotation"  CenterX="0.5" CenterY="0.0" Angle="0"/>
+                        <RotateTransform x:Name="beamNeedleRotation" Angle="0" CenterX="0.5" CenterY="0.0" />
                     </Path.RenderTransform>
                     <Path.Fill>
                         <LinearGradientBrush>
-                            <GradientStop Color="LightGray" Offset="0"/>
-                            <GradientStop Color="{StaticResource KinectPurpleColor}" Offset="0.5"/>
-                            <GradientStop Color="{StaticResource KinectPurpleColor}" Offset="1"/>
+                            <GradientStop Offset="0" Color="LightGray" />
+                            <GradientStop Offset="0.5" Color="{StaticResource KinectPurpleColor}" />
+                            <GradientStop Offset="1" Color="{StaticResource KinectPurpleColor}" />
                         </LinearGradientBrush>
                     </Path.Fill>
                 </Path>
-                <Path Data="M 0.1270,0.3021 L 0.228,0.2203 A 0.35,0.35 102 0 0 0.772,0.2203 L 0.8730,0.3021 A 0.48,0.48 102 0 1 0.1270,0.3021 Z"  StrokeThickness="0.001" Stroke="#7FD3D3D3"/>
-                <Path Data="M 0.2280,0.2203 L 0.13,0.2203 L 0.13,0.0353 L 0.15,0.0353" StrokeThickness="0.001" Stroke="#7FD3D3D3"/>
-                <Path Data="M 0.7720,0.2203 L 0.87,0.2203 L 0.87,0.0353 L 0.85,0.0353" StrokeThickness="0.001" Stroke="#7FD3D3D3"/>
+                <Path Data="M 0.1270,0.3021 L 0.228,0.2203 A 0.35,0.35 102 0 0 0.772,0.2203 L 0.8730,0.3021 A 0.48,0.48 102 0 1 0.1270,0.3021 Z"
+                      Stroke="#7FD3D3D3"
+                      StrokeThickness="0.001" />
+                <Path Data="M 0.2280,0.2203 L 0.13,0.2203 L 0.13,0.0353 L 0.15,0.0353"
+                      Stroke="#7FD3D3D3"
+                      StrokeThickness="0.001" />
+                <Path Data="M 0.7720,0.2203 L 0.87,0.2203 L 0.87,0.0353 L 0.85,0.0353"
+                      Stroke="#7FD3D3D3"
+                      StrokeThickness="0.001" />
             </Canvas>
         </Viewbox>
-        <StatusBar Grid.Row="2" HorizontalAlignment="Stretch" x:Name="statusBar" VerticalAlignment="Bottom" Background="White" Foreground="{StaticResource MediumGreyBrush}">
+
+        <!--  The Status Bar (ie. What Mode are we in)  -->
+        <StatusBar x:Name="statusBar"
+                   Grid.Row="2"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Bottom"
+                   Background="White"
+                   Foreground="Red">
             <StatusBarItem Content="{Binding StatusText}" />
-            
         </StatusBar>
-        <Ellipse x:Name="targetEllipse" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="100" Margin="331,173,0,0" Grid.Row="1" Stroke="Black" StrokeThickness="5" VerticalAlignment="Top" Width="100" RenderTransformOrigin="0.53,0.485">
-            <Ellipse.BindingGroup>
-                <BindingGroup/>
-            </Ellipse.BindingGroup>
-        </Ellipse>
+
+
     </Grid>
 </Window>
