@@ -91,7 +91,7 @@ namespace KinectKannon
         private ColorFrameRenderer colorRenderer;
 
         /// <summary>
-        /// Responsible for drawing the HUD layer
+        /// Responsible for finding skeletal XY positions of a tracked body's SpineMid.
         /// </summary>
         private SkeletalAutonomy skeletonAutomator = new SkeletalAutonomy();
 
@@ -468,7 +468,6 @@ namespace KinectKannon
         /// <param name="e">event arguments</param>
         private void Reader_FrameArrived(object sender, BodyFrameArrivedEventArgs e)
         {
-            int x = 0;
             bool dataReceived = false;
 
             using (BodyFrame bodyFrame = e.FrameReference.AcquireFrame())
@@ -495,22 +494,25 @@ namespace KinectKannon
                     && this.trackingMode == TrackingMode.SKELETAL){
                     trackIndex = (int)requestedTrackedSkeleton;
                 }
-
+                // Count is used to iterate through Bodies[] and compared with the trackIndex.
+                int count = 0;
                 if (this.trackingMode == TrackingMode.SKELETAL)
                 {
-                    
-                    //NATHANIEL Change this so that statement accounts for when 0 body is missing.
-                    if (trackIndex != null)
+                    // Iterate through each body present in bodies[] and verify,
+                    // if body.isTracked is true. If true send body to skeletal autonomator,
+                    // to return X, Y, position and Theta angle of the SpineMid Joint.
+                    foreach (Body body in this.bodies)
                     {
-                        
-                        x = trackIndex ?? default(int);
-                        if (this.bodies[x].IsTracked)
+                        if (body.IsTracked)
                         {
-                            skeletonAutomator.SkeletonAutonomy(this.bodies, trackIndex);
-                            this.cannonXPosition = skeletonAutomator.getXDist;
-                            this.cannonYPosition = skeletonAutomator.getYDist;
-                            
+                            if(trackIndex != null && trackIndex == count)
+                            {
+                                skeletonAutomator.SkeletonAutonomy(this.bodies, trackIndex);
+                                this.cannonXPosition = skeletonAutomator.getXDist;
+                                this.cannonYPosition = skeletonAutomator.getYDist;
+                            }
                         }
+                        count++;
                     }
                     colorRenderer.DrawBodies(this.bodies, this.coordinateMapper, trackIndex);
                 }
