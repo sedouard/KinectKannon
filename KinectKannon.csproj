@@ -96,7 +96,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Control\PanTilt.cs" />
+    <Compile Include="Kannon Autonomy\KannonAutonomy.cs" />
     <Compile Include="Rendering\ColorFrameRenderer.cs" />
     <Compile Include="Rendering\HudRenderer.cs" />
     <Page Include="MainWindow.xaml">
