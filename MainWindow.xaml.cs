@@ -6,19 +6,31 @@
 
 namespace KinectKannon
 {
+    using J2i.Net.XInputWrapper;
     using Microsoft.Kinect;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Linq;
+    using System.Runtime.InteropServices;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
     using System.Windows;
     using System.Windows.Media;
     using System.Windows.Media.Imaging;
-    using System.Timers;
+    using System.Windows.Controls;
+    using System.Windows.Data;
+    using System.Windows.Documents;
+    using System.Windows.Navigation;
+    using System.Windows.Shapes;
     using System.Windows.Input;
     using KinectKannon.Rendering;
+    using System.Timers;
+    
     /// <summary>
     /// Interaction logic for MainWindow
     /// </summary>
@@ -171,11 +183,16 @@ namespace KinectKannon
             //register the code which will tell the system what to do when keys are pressed
             SetupKeyHandlers();
 
+            //Setup Contoller
+            
+
+
             //draw the headsup display initially
             this.hudRenderer.RenderHud(new HudRenderingParameters()
             {
                 CannonX = this.CannonX,
                 CannonY = this.CannonY,
+                CannonTheta = this.CannonTheta,
                 StatusText = this.statusText,
                 SystemReady = (this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen),
                 FrameRate = this.FrameRate,
@@ -184,6 +201,9 @@ namespace KinectKannon
 
             //debug start frame rate counter
             FPSTimerStart();
+
+            // Try to use the controller
+            
         }
 
         void audioReader_FrameArrived(object sender, AudioBeamFrameArrivedEventArgs e)
@@ -265,11 +285,22 @@ namespace KinectKannon
             KeyDown += MainWindow_KeyDown;
         }
 
+
+        //Some way of using the controller
+        // An event handler
+        // Takes in XInput.Event args
+        //  if (b.Key == XInput.Controller.Key."B")
+        //  { this.trackingMode = TrackingMode.SKELETAL
+        //    AudioViewBox.Visisbility = Visibility.Hidden;
+
+
         /// <summary>
         /// Handles an 'controller' actions using the keyboard interface
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        /// 
+        
         void MainWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             //TODO: This is where the logic for controlling the servos will be placed
@@ -331,6 +362,7 @@ namespace KinectKannon
             {
                 CannonX = this.CannonX,
                 CannonY = this.CannonY,
+                CannonTheta = this.CannonTheta,
                 StatusText = this.statusText,
                 SystemReady = (this.kinectSensor != null && this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen),
                 FrameRate = this.FrameRate,
@@ -340,7 +372,7 @@ namespace KinectKannon
 
         private void FPSTimerStart()
         {
-            var fpsTimer = new Timer(1000);
+            var fpsTimer = new System.Timers.Timer(1000);
             fpsTimer.Elapsed += fpsTimer_Elapsed;
             fpsTimer.Enabled = true;
         }
@@ -405,7 +437,7 @@ namespace KinectKannon
         {
             get
             {
-                return String.Format("{0.0}", this.cannonThetaPosition);
+                return String.Format("{0:0.00}", this.cannonThetaPosition);
             }
         }
         /// <summary>
