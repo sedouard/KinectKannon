@@ -19,6 +19,7 @@ namespace KinectKannon
     using System.Timers;
     using System.Windows.Input;
     using KinectKannon.Rendering;
+    using KinectKannon.Autonomy;
     /// <summary>
     /// Interaction logic for MainWindow
     /// </summary>
@@ -93,6 +94,11 @@ namespace KinectKannon
         /// </summary>
         /// 
         private ColorFrameRenderer colorRenderer;
+
+        /// <summary>
+        /// Responsible for finding skeletal XY positions of a tracked body's SpineMid.
+        /// </summary>
+        private KannonAutonomy skeletonAutomator = new KannonAutonomy();
 
         /// <summary>
         /// Responsible for drawing the HUD layer
@@ -307,12 +313,32 @@ namespace KinectKannon
             else if (this.trackingMode == TrackingMode.SKELETAL &&
                 e.Key == Key.A)
             {
-                this.requestedTrackedSkeleton = SkeletalLetter.A;
+                    this.requestedTrackedSkeleton = SkeletalLetter.A;
             }
             else if (this.trackingMode == TrackingMode.SKELETAL &&
                 e.Key == Key.B)
             {
-                this.requestedTrackedSkeleton = SkeletalLetter.B;
+                    this.requestedTrackedSkeleton = SkeletalLetter.B;
+            }
+            else if (this.trackingMode == TrackingMode.SKELETAL &&
+                e.Key == Key.C)
+            {
+                    this.requestedTrackedSkeleton = SkeletalLetter.C;
+            }
+            else if (this.trackingMode == TrackingMode.SKELETAL &&
+                e.Key == Key.D)
+            {
+                    this.requestedTrackedSkeleton = SkeletalLetter.D;
+            }
+            else if (this.trackingMode == TrackingMode.SKELETAL &&
+                e.Key == Key.E)
+            {
+                    this.requestedTrackedSkeleton = SkeletalLetter.E;
+            }
+            else if (this.trackingMode == TrackingMode.SKELETAL &&
+                e.Key == Key.F)
+            {
+                    this.requestedTrackedSkeleton = SkeletalLetter.F;
             }
         }
 
@@ -500,15 +526,22 @@ namespace KinectKannon
                     && this.trackingMode == TrackingMode.SKELETAL){
                     trackIndex = (int)requestedTrackedSkeleton;
                 }
-
+                // Count is used to iterate through Bodies[] and compared with the trackIndex.
                 if (this.trackingMode == TrackingMode.SKELETAL)
                 {
+                    if(bodies != null && bodies.Length > trackIndex)
+                    // Iterate through each body present in bodies[] and verify,
+                    // if body.isTracked is true. If true send body to skeletal autonomator,
+                    // to return X, Y, position and Theta angle of the SpineMid Joint.
+                    {
+                        skeletonAutomator.skeletalAutonomy(this.bodies, trackIndex);
+                        this.cannonXPosition = skeletonAutomator.getXDist;
+                        this.cannonYPosition = skeletonAutomator.getYDist;
+                    }
                     colorRenderer.DrawBodies(this.bodies, this.coordinateMapper, trackIndex);
-                }
-                
+                }   
             }
         }
-
         /// <summary>
         /// Handles the event which the sensor becomes unavailable (E.g. paused, closed, unplugged).
         /// </summary>
