@@ -18,6 +18,7 @@ namespace KinectKannon.Rendering
         public string StatusText { get; set; }
         public string CannonX { get; set; }
         public string CannonY { get; set; }
+        public string CannonTheta { get; set; }
 
         
         public TrackingMode TrackingMode { get; set; }
@@ -74,6 +75,8 @@ namespace KinectKannon.Rendering
                 RenderHudText(dc, "X Position: " + renderingParams.CannonX, Brushes.YellowGreen, 20, new Point(320, 1155));
                 RenderHudText(dc, "Y Position: " + renderingParams.CannonY, Brushes.YellowGreen, 20, new Point(320, 1170));
 
+                //Canon Theta
+                RenderHudText(dc, "Theta:       " + renderingParams.CannonTheta, Brushes.YellowGreen, 20, new Point(320, 1185));
 
                 //The Tracking Mode Area 
                 dc.DrawRectangle(new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new Pen(), new Rect(1800, 1150, 180, 65));
