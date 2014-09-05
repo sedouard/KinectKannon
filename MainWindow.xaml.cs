@@ -18,6 +18,7 @@ namespace KinectKannon
     using System.Windows.Media.Imaging;
     using System.Timers;
     using System.Windows.Input;
+    using KinectKannon.Control;
     using KinectKannon.Rendering;
     /// <summary>
     /// Interaction logic for MainWindow
@@ -116,6 +117,7 @@ namespace KinectKannon
         /// </summary>
         private readonly byte[] audioBuffer = null;
 
+        private PanTiltController panTilt;
         public MainWindow()
         {
             // one sensor is currently supported
@@ -171,16 +173,23 @@ namespace KinectKannon
             //register the code which will tell the system what to do when keys are pressed
             SetupKeyHandlers();
 
+            //initialize
+            panTilt = PanTiltController.GetOrCreatePanTiltController();
+
+            panTilt.TryInitialize();
+
             //draw the headsup display initially
             this.hudRenderer.RenderHud(new HudRenderingParameters()
             {
                 CannonX = this.CannonX,
                 CannonY = this.CannonY,
                 StatusText = this.statusText,
-                SystemReady = (this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen),
+                SystemReady = (this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen && this.panTilt.IsReady),
                 FrameRate = this.FrameRate,
                 TrackingMode = this.trackingMode
             });
+
+            
 
             //debug start frame rate counter
             FPSTimerStart();
@@ -273,21 +282,30 @@ namespace KinectKannon
         void MainWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             //TODO: This is where the logic for controlling the servos will be placed
-            if(e.Key == System.Windows.Input.Key.Up && this.trackingMode == TrackingMode.MANUAL)
+            if (this.panTilt.IsReady)
             {
-                this.cannonYPosition += .1;
-            }
-            else if (e.Key == System.Windows.Input.Key.Down && this.trackingMode == TrackingMode.MANUAL)
-            {
-                this.cannonYPosition -= .1;
-            }
-            else if (e.Key == System.Windows.Input.Key.Left && this.trackingMode == TrackingMode.MANUAL)
-            {
-                this.cannonXPosition -= .1;
-            }
-            else if (e.Key == System.Windows.Input.Key.Right && this.trackingMode == TrackingMode.MANUAL)
-            {
-                this.cannonXPosition += .1;
+                if (e.Key == System.Windows.Input.Key.Up && this.trackingMode == TrackingMode.MANUAL)
+                {
+                    
+                    this.cannonYPosition = 20;
+                    this.panTilt.PanUp(Math.Abs(this.cannonYPosition));
+                }
+                else if (e.Key == System.Windows.Input.Key.Down && this.trackingMode == TrackingMode.MANUAL)
+                {
+                    this.cannonYPosition = 20;
+                    this.panTilt.PanDown(Math.Abs(this.cannonYPosition));
+                    
+                }
+                else if (e.Key == System.Windows.Input.Key.Left && this.trackingMode == TrackingMode.MANUAL)
+                {
+                    this.cannonXPosition = 20;
+                    this.panTilt.PanLeft(Math.Abs(this.cannonXPosition));
+                }
+                else if (e.Key == System.Windows.Input.Key.Right && this.trackingMode == TrackingMode.MANUAL)
+                {
+                    this.cannonXPosition += 20;
+                    this.panTilt.PanRight(Math.Abs(this.cannonXPosition));
+                }
             }
             else if (e.Key == Key.NumPad1 || e.Key == Key.D1)
             {
@@ -326,13 +344,21 @@ namespace KinectKannon
             //render color layer
             this.colorRenderer.Reader_ColorFrameArrived(sender, e);
             elapsedFrames++;
+
+            var systemReady = (this.kinectSensor != null && this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen && this.panTilt.IsReady);
+
+            if (systemReady)
+            {
+                this.statusText = Microsoft.Samples.Kinect.BodyBasics.Properties.Resources.RunningStatusText;
+            }
+
             //draw the headsup display initially
             this.hudRenderer.RenderHud(new HudRenderingParameters()
             {
                 CannonX = this.CannonX,
                 CannonY = this.CannonY,
                 StatusText = this.statusText,
-                SystemReady = (this.kinectSensor != null && this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen),
+                SystemReady = systemReady,
                 FrameRate = this.FrameRate,
                 TrackingMode = this.trackingMode
             });
@@ -517,8 +543,20 @@ namespace KinectKannon
         private void Sensor_IsAvailableChanged(object sender, IsAvailableChangedEventArgs e)
         {
             // on failure, set the status text
-            this.statusText = this.kinectSensor.IsAvailable ? Microsoft.Samples.Kinect.BodyBasics.Properties.Resources.RunningStatusText
-                                                            : Microsoft.Samples.Kinect.BodyBasics.Properties.Resources.SensorNotAvailableStatusText;
+            if (this.kinectSensor.IsAvailable)
+            {
+                if (this.panTilt.IsReady)
+                {
+                    this.statusText = Microsoft.Samples.Kinect.BodyBasics.Properties.Resources.RunningStatusText;
+                }
+                else
+                {
+                    this.statusText = Microsoft.Samples.Kinect.BodyBasics.Properties.Resources.PanTiltNotAvailableStatusText;
+                }
+            }
+            else{
+                 this.statusText = Microsoft.Samples.Kinect.BodyBasics.Properties.Resources.SensorNotAvailableStatusText;
+            }
         }
 
     }

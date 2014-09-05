@@ -123,6 +123,9 @@
   <data name="NoSensorStatusText" xml:space="preserve">
     <value>System Sensor Unavailable</value>
   </data>
+  <data name="PanTiltNotAvailableStatusText" xml:space="preserve">
+    <value>Pan Tilt Controller Offline</value>
+  </data>
   <data name="RunningStatusText" xml:space="preserve">
     <value>Operational</value>
   </data>

@@ -158,10 +158,10 @@ namespace KinectKannon.Control
             }
 
  	        if(null != PanTiltReady){
-                IsReady = true;
+                
                 PanTiltReady(this, new PanTiltReadyArgs());
             }
-
+            IsReady = true;
             
         }
 

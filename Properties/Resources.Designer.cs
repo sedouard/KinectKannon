@@ -79,6 +79,15 @@ namespace Microsoft.Samples.Kinect.BodyBasics.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string PanTiltNotAvailableStatusText {
+            get {
+                return ResourceManager.GetString("PanTiltNotAvailableStatusText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Operational.
         /// </summary>
         internal static string RunningStatusText {

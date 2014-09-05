@@ -72,8 +72,8 @@ namespace KinectKannon.Tests
                 Console.WriteLine("Pan tilt ready");
                 try
                 {
-                    sender.PanRight(20);
-                    sender.PanUp(20);
+                    sender.PanRight(100);
+                    sender.PanUp(100);
                 }
                 catch (Exception e)
                 {
@@ -83,12 +83,12 @@ namespace KinectKannon.Tests
                 
 
                 //Pause 2 seconds, then test servos other way
-                Thread.Sleep(2000);
+                Thread.Sleep(20000);
 
                 try
                 {
-                    sender.PanLeft(20);
-                    sender.PanDown(20);
+                    sender.PanLeft(100);
+                    sender.PanDown(100);
                 }
                 catch (Exception e)
                 {
@@ -97,7 +97,7 @@ namespace KinectKannon.Tests
                 }
 
                 //Pause 2 seconds to confirm directional switch
-                Thread.Sleep(2000);
+                Thread.Sleep(10000);
                 completed = true;
             };
 
