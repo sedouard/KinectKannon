@@ -185,6 +185,9 @@ namespace KinectKannon
 
             //Setup Contoller
             
+            _selectedController = XboxController.RetrieveController(0);
+            _selectedController.StateChanged += _selectedController_StateChanged;
+            XboxController.StartPolling();
 
 
             //draw the headsup display initially
@@ -204,6 +207,52 @@ namespace KinectKannon
 
             // Try to use the controller
             
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            XboxController.StopPolling();
+            base.OnClosing(e);
+        }
+
+        void _selectedController_StateChanged(object sender, XboxControllerStateChangedEventArgs e)
+        {
+            OnPropertyChanged("SelectedController");
+
+            // Where the action happens with the controller. 
+            if (SelectedController.IsAPressed) 
+            {
+                Console.WriteLine("A is pressed");
+            }
+            else if (SelectedController.IsBPressed)
+            {
+                Console.WriteLine("B is pressed");
+            }
+        }
+
+        public XboxController SelectedController
+        {
+            get { return _selectedController; }
+        }
+
+        volatile bool _keepRunning;
+        XboxController _selectedController;
+
+        public void OnPropertyChanged(string name)
+        {
+            if (PropertyChanged != null)
+            {
+                Action a = () => { PropertyChanged(this, new PropertyChangedEventArgs(name)); };
+                Dispatcher.BeginInvoke(a, null);
+            }
+        }
+
+         
+
+        private void SelectedControllerChanged(object sender, RoutedEventArgs e)
+        {
+            _selectedController = XboxController.RetrieveController(((ComboBox)sender).SelectedIndex);
+            OnPropertyChanged("SelectedController");
         }
 
         void audioReader_FrameArrived(object sender, AudioBeamFrameArrivedEventArgs e)
@@ -320,17 +369,17 @@ namespace KinectKannon
             {
                 this.cannonXPosition += .1;
             }
-            else if (e.Key == Key.NumPad1 || e.Key == Key.D1)
+            else if (e.Key == Key.NumPad1 || e.Key == Key.D1 || SelectedController.IsAPressed == true)
             {
                 this.trackingMode = TrackingMode.MANUAL;
                 AudioViewBox.Visibility = Visibility.Hidden;
             }
-            else if (e.Key == Key.NumPad2 || e.Key == Key.D2)
+            else if (e.Key == Key.NumPad2 || e.Key == Key.D2 )
             {
                 this.trackingMode = TrackingMode.SKELETAL;
                 AudioViewBox.Visibility = Visibility.Hidden;
             }
-            else if (e.Key == Key.NumPad3 || e.Key == Key.D3)
+            else if (e.Key == Key.NumPad3 || e.Key == Key.D3 )
             {
                 this.trackingMode = TrackingMode.AUDIBLE;
                 AudioViewBox.Visibility = Visibility.Visible;
