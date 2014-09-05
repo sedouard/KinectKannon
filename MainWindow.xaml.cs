@@ -29,8 +29,13 @@ namespace KinectKannon
     using System.Windows.Shapes;
     using System.Windows.Input;
     using KinectKannon.Rendering;
+<<<<<<< HEAD
     using System.Timers;
     
+=======
+    using KinectKannon.Autonomy;
+	using KinectKannon.Control;
+>>>>>>> 712bfe9172a173920dee90cb58afb4ce2302952e
     /// <summary>
     /// Interaction logic for MainWindow
     /// </summary>
@@ -107,6 +112,11 @@ namespace KinectKannon
         private ColorFrameRenderer colorRenderer;
 
         /// <summary>
+        /// Responsible for finding skeletal XY positions of a tracked body's SpineMid.
+        /// </summary>
+        private KannonAutonomy skeletonAutomator = new KannonAutonomy();
+
+        /// <summary>
         /// Responsible for drawing the HUD layer
         /// </summary>
         private HudRenderer hudRenderer;
@@ -128,6 +138,7 @@ namespace KinectKannon
         /// </summary>
         private readonly byte[] audioBuffer = null;
 
+        private PanTiltController panTilt;
         public MainWindow()
         {
             // one sensor is currently supported
@@ -183,12 +194,19 @@ namespace KinectKannon
             //register the code which will tell the system what to do when keys are pressed
             SetupKeyHandlers();
 
+<<<<<<< HEAD
             //Setup Contoller
             
             _selectedController = XboxController.RetrieveController(0);
             _selectedController.StateChanged += _selectedController_StateChanged;
             XboxController.StartPolling();
 
+=======
+            //initialize
+            panTilt = PanTiltController.GetOrCreatePanTiltController();
+
+            panTilt.TryInitialize();
+>>>>>>> 712bfe9172a173920dee90cb58afb4ce2302952e
 
             //draw the headsup display initially
             this.hudRenderer.RenderHud(new HudRenderingParameters()
@@ -197,10 +215,12 @@ namespace KinectKannon
                 CannonY = this.CannonY,
                 CannonTheta = this.CannonTheta,
                 StatusText = this.statusText,
-                SystemReady = (this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen),
+                SystemReady = (this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen && this.panTilt.IsReady),
                 FrameRate = this.FrameRate,
                 TrackingMode = this.trackingMode
             });
+
+            
 
             //debug start frame rate counter
             FPSTimerStart();
@@ -353,21 +373,30 @@ namespace KinectKannon
         void MainWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             //TODO: This is where the logic for controlling the servos will be placed
-            if(e.Key == System.Windows.Input.Key.Up && this.trackingMode == TrackingMode.MANUAL)
+            if (this.panTilt.IsReady)
             {
-                this.cannonYPosition += .1;
-            }
-            else if (e.Key == System.Windows.Input.Key.Down && this.trackingMode == TrackingMode.MANUAL)
-            {
-                this.cannonYPosition -= .1;
-            }
-            else if (e.Key == System.Windows.Input.Key.Left && this.trackingMode == TrackingMode.MANUAL)
-            {
-                this.cannonXPosition -= .1;
-            }
-            else if (e.Key == System.Windows.Input.Key.Right && this.trackingMode == TrackingMode.MANUAL)
-            {
-                this.cannonXPosition += .1;
+                if (e.Key == System.Windows.Input.Key.Up && this.trackingMode == TrackingMode.MANUAL)
+                {
+                    
+                    this.cannonYPosition = 20;
+                    this.panTilt.PanUp(Math.Abs(this.cannonYPosition));
+                }
+                else if (e.Key == System.Windows.Input.Key.Down && this.trackingMode == TrackingMode.MANUAL)
+                {
+                    this.cannonYPosition = 20;
+                    this.panTilt.PanDown(Math.Abs(this.cannonYPosition));
+                    
+                }
+                else if (e.Key == System.Windows.Input.Key.Left && this.trackingMode == TrackingMode.MANUAL)
+                {
+                    this.cannonXPosition = 20;
+                    this.panTilt.PanLeft(Math.Abs(this.cannonXPosition));
+                }
+                else if (e.Key == System.Windows.Input.Key.Right && this.trackingMode == TrackingMode.MANUAL)
+                {
+                    this.cannonXPosition += 20;
+                    this.panTilt.PanRight(Math.Abs(this.cannonXPosition));
+                }
             }
             else if (e.Key == Key.NumPad1 || e.Key == Key.D1 || SelectedController.IsAPressed == true)
             {
@@ -387,12 +416,32 @@ namespace KinectKannon
             else if (this.trackingMode == TrackingMode.SKELETAL &&
                 e.Key == Key.A)
             {
-                this.requestedTrackedSkeleton = SkeletalLetter.A;
+                    this.requestedTrackedSkeleton = SkeletalLetter.A;
             }
             else if (this.trackingMode == TrackingMode.SKELETAL &&
                 e.Key == Key.B)
             {
-                this.requestedTrackedSkeleton = SkeletalLetter.B;
+                    this.requestedTrackedSkeleton = SkeletalLetter.B;
+            }
+            else if (this.trackingMode == TrackingMode.SKELETAL &&
+                e.Key == Key.C)
+            {
+                    this.requestedTrackedSkeleton = SkeletalLetter.C;
+            }
+            else if (this.trackingMode == TrackingMode.SKELETAL &&
+                e.Key == Key.D)
+            {
+                    this.requestedTrackedSkeleton = SkeletalLetter.D;
+            }
+            else if (this.trackingMode == TrackingMode.SKELETAL &&
+                e.Key == Key.E)
+            {
+                    this.requestedTrackedSkeleton = SkeletalLetter.E;
+            }
+            else if (this.trackingMode == TrackingMode.SKELETAL &&
+                e.Key == Key.F)
+            {
+                    this.requestedTrackedSkeleton = SkeletalLetter.F;
             }
         }
 
@@ -406,6 +455,14 @@ namespace KinectKannon
             //render color layer
             this.colorRenderer.Reader_ColorFrameArrived(sender, e);
             elapsedFrames++;
+
+            var systemReady = (this.kinectSensor != null && this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen && this.panTilt.IsReady);
+
+            if (systemReady)
+            {
+                this.statusText = Microsoft.Samples.Kinect.BodyBasics.Properties.Resources.RunningStatusText;
+            }
+
             //draw the headsup display initially
             this.hudRenderer.RenderHud(new HudRenderingParameters()
             {
@@ -413,7 +470,7 @@ namespace KinectKannon
                 CannonY = this.CannonY,
                 CannonTheta = this.CannonTheta,
                 StatusText = this.statusText,
-                SystemReady = (this.kinectSensor != null && this.kinectSensor.IsAvailable && this.kinectSensor.IsOpen),
+                SystemReady = systemReady,
                 FrameRate = this.FrameRate,
                 TrackingMode = this.trackingMode
             });
@@ -581,15 +638,22 @@ namespace KinectKannon
                     && this.trackingMode == TrackingMode.SKELETAL){
                     trackIndex = (int)requestedTrackedSkeleton;
                 }
-
+                // Count is used to iterate through Bodies[] and compared with the trackIndex.
                 if (this.trackingMode == TrackingMode.SKELETAL)
                 {
+                    if(bodies != null && bodies.Length > trackIndex)
+                    // Iterate through each body present in bodies[] and verify,
+                    // if body.isTracked is true. If true send body to skeletal autonomator,
+                    // to return X, Y, position and Theta angle of the SpineMid Joint.
+                    {
+                        skeletonAutomator.skeletalAutonomy(this.bodies, trackIndex);
+                        this.cannonXPosition = skeletonAutomator.getXDist;
+                        this.cannonYPosition = skeletonAutomator.getYDist;
+                    }
                     colorRenderer.DrawBodies(this.bodies, this.coordinateMapper, trackIndex);
-                }
-                
+                }   
             }
         }
-
         /// <summary>
         /// Handles the event which the sensor becomes unavailable (E.g. paused, closed, unplugged).
         /// </summary>
@@ -598,8 +662,20 @@ namespace KinectKannon
         private void Sensor_IsAvailableChanged(object sender, IsAvailableChangedEventArgs e)
         {
             // on failure, set the status text
-            this.statusText = this.kinectSensor.IsAvailable ? Microsoft.Samples.Kinect.BodyBasics.Properties.Resources.RunningStatusText
-                                                            : Microsoft.Samples.Kinect.BodyBasics.Properties.Resources.SensorNotAvailableStatusText;
+            if (this.kinectSensor.IsAvailable)
+            {
+                if (this.panTilt.IsReady)
+                {
+                    this.statusText = Microsoft.Samples.Kinect.BodyBasics.Properties.Resources.RunningStatusText;
+                }
+                else
+                {
+                    this.statusText = Microsoft.Samples.Kinect.BodyBasics.Properties.Resources.PanTiltNotAvailableStatusText;
+                }
+            }
+            else{
+                 this.statusText = Microsoft.Samples.Kinect.BodyBasics.Properties.Resources.SensorNotAvailableStatusText;
+            }
         }
 
     }
