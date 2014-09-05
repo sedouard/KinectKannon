@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -158,10 +158,10 @@ namespace KinectKannon.Control
             }
 
  	        if(null != PanTiltReady){
-                
+                IsReady = true;
                 PanTiltReady(this, new PanTiltReadyArgs());
             }
-            IsReady = true;
+
             
         }
 
