@@ -96,6 +96,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Control\Firing.cs" />
+    <Compile Include="Control\PanTilt.cs" />
     <Compile Include="Kannon Autonomy\KannonAutonomy.cs" />
     <Compile Include="Rendering\ColorFrameRenderer.cs" />
     <Compile Include="Rendering\HudRenderer.cs" />
@@ -161,6 +163,7 @@
   <ItemGroup>
     <Resource Include="Images\Scope3.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

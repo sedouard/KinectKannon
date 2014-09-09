@@ -129,6 +129,12 @@
   <data name="RunningStatusText" xml:space="preserve">
     <value>Operational</value>
   </data>
+  <data name="SafetyDisengagedText" xml:space="preserve">
+    <value>DISENGAGED - SAFE</value>
+  </data>
+  <data name="SafetyEngagedText" xml:space="preserve">
+    <value>ENGAGED - READY TO FIRE</value>
+  </data>
   <data name="SensorNotAvailableStatusText" xml:space="preserve">
     <value>Kinect not available!</value>
   </data>

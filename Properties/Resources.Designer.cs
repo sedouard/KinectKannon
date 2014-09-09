@@ -79,7 +79,7 @@ namespace Microsoft.Samples.Kinect.BodyBasics.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to Pan Tilt Controller Offline.
         /// </summary>
         internal static string PanTiltNotAvailableStatusText {
             get {
@@ -93,6 +93,24 @@ namespace Microsoft.Samples.Kinect.BodyBasics.Properties {
         internal static string RunningStatusText {
             get {
                 return ResourceManager.GetString("RunningStatusText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DISENGAGED - SAFE.
+        /// </summary>
+        internal static string SafetyDisengagedText {
+            get {
+                return ResourceManager.GetString("SafetyDisengagedText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ENGAGED - READY TO FIRE.
+        /// </summary>
+        internal static string SafetyEngagedText {
+            get {
+                return ResourceManager.GetString("SafetyEngagedText", resourceCulture);
             }
         }
         

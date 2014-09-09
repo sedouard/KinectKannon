@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="PanTiltTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="FiringControlTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\KinectKannon.csproj">
