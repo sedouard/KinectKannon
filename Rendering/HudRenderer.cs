@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -86,8 +86,6 @@ namespace KinectKannon.Rendering
                 RenderHudText(dc, "Cannon Status: ", Brushes.YellowGreen, 40, new Point(0, 1100));
                 RenderHudText(dc, "X Position: " + renderingParams.CannonX, infoBrush, 20, new Point(320, 1105));
                 RenderHudText(dc, "Y Position: " + renderingParams.CannonY, infoBrush, 20, new Point(320, 1120));
-
-                //The Saftey Status Area
 
                 //The Tracking Mode Area 
                 dc.DrawRectangle(new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new Pen(), new Rect(1800, 1150, 180, 65));
