@@ -17,16 +17,19 @@ namespace KinectKannon.Autonomy
     /// </summary>
     class KannonAutonomy
     {
+        //Return the Calculated X, y and theta of selected object
         private double originXDist;
         private double originYDist;
         private double originTheta;
 
-        public KannonAutonomy()
+        //Initializes the distances to be 0
+       public KannonAutonomy()
         {
             originXDist = 0;
             originYDist = 0;
             originTheta = 0;
         }
+        //Returns the horizontal distance from the object to the origin
         public double getXDist
         {
             get
@@ -34,6 +37,7 @@ namespace KinectKannon.Autonomy
                 return originXDist;
             }
         }
+        //Returns the virtical distance from the object to the origin
         public double getYDist
         {
             get

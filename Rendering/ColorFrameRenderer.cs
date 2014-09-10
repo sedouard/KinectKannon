@@ -242,7 +242,7 @@ namespace KinectKannon.Rendering
                 }
                 else if (trackingState == TrackingState.Inferred)
                 {
-                    drawColor = this.trackedJointColor;
+                    drawColor = this.trackedJointColor; 
                 }
 
                 if (drawColor != null)
