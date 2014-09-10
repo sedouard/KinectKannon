@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,8 +18,8 @@ namespace KinectKannon.Rendering
         public string StatusText { get; set; }
         public string CannonX { get; set; }
         public string CannonY { get; set; }
-
-        
+        public bool FiringSafety { get; set; }
+        public string FiringSafetyText { get; set; }
         public TrackingMode TrackingMode { get; set; }
     }
     class HudRenderer
@@ -57,6 +57,7 @@ namespace KinectKannon.Rendering
                 // Draw a transparent background to set the render size
                 dc.DrawRectangle(Brushes.Transparent, null, new Rect(0.0, 0.0, this.displayWidth, this.displayHeight));
                 var statusBrush = Brushes.Green;
+                var infoBrush = Brushes.YellowGreen;
                 if (!(renderingParams.SystemReady))
                 {
                     statusBrush = Brushes.Red;
@@ -67,18 +68,29 @@ namespace KinectKannon.Rendering
                 //System Status
                 RenderHudText(dc, "System Status: " + renderingParams.StatusText, statusBrush, 20, new System.Windows.Point(0, 0));
                 //Cannon Properties
-               
-                //Canon Status: XY Area 
-                dc.DrawRectangle(new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new Pen(), new Rect(0, 1150, 490, 65));
-                RenderHudText(dc, "Cannon Status: ", Brushes.YellowGreen, 40, new Point(0, 1150));
-                RenderHudText(dc, "X Position: " + renderingParams.CannonX, Brushes.YellowGreen, 20, new Point(320, 1155));
-                RenderHudText(dc, "Y Position: " + renderingParams.CannonY, Brushes.YellowGreen, 20, new Point(320, 1170));
 
+                //Safety Status
+                dc.DrawRectangle(new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new Pen(), new Rect(0, 1150, 875, 65));
+                RenderHudText(dc, "Safety Status: ", infoBrush, 40, new System.Windows.Point(0, 1155));
+
+                if (renderingParams.FiringSafety)
+                {
+                    RenderHudText(dc, renderingParams.FiringSafetyText, infoBrush, 40, new Point(310, 1155));
+                }
+                else {
+                    RenderHudText(dc, renderingParams.FiringSafetyText, statusBrush, 40, new Point(310, 1155));
+                }
+
+                //Canon Status: XY Area 
+                dc.DrawRectangle(new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new Pen(), new Rect(0, 1100, 490, 50));
+                RenderHudText(dc, "Cannon Status: ", Brushes.YellowGreen, 40, new Point(0, 1100));
+                RenderHudText(dc, "X Position: " + renderingParams.CannonX, infoBrush, 20, new Point(320, 1105));
+                RenderHudText(dc, "Y Position: " + renderingParams.CannonY, infoBrush, 20, new Point(320, 1120));
 
                 //The Tracking Mode Area 
                 dc.DrawRectangle(new SolidColorBrush(Color.FromArgb(128, 255, 0, 0)), new Pen(), new Rect(1800, 1150, 180, 65));
                 RenderHudText(dc, "Tracking Mode", new SolidColorBrush(Color.FromArgb(178, 48, 9, 0)), 20, new Point(1800, 1150));
-                RenderHudText(dc, renderingParams.TrackingMode.ToString(), Brushes.YellowGreen, 40, new Point(1800, 1170));
+                RenderHudText(dc, renderingParams.TrackingMode.ToString(), infoBrush, 40, new Point(1800, 1170));
             }
         }
 

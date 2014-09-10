@@ -12,9 +12,10 @@ namespace KinectKannon.Tests
         {
             PanTiltController controller = PanTiltController.GetOrCreatePanTiltController();
 
+
             try
             {
-                controller.PanDown(20);
+                controller.PanY(20);
                 Assert.Fail("Failed to throw on Pan");
             }
             catch (PanTiltControllerException ex)
@@ -25,29 +26,7 @@ namespace KinectKannon.Tests
 
             try
             {
-                controller.PanUp(20);
-                Assert.Fail("Failed to throw on Pan");
-            }
-            catch (PanTiltControllerException ex)
-            {
-                //we expect an exception
-                Assert.IsNotNull(ex, "Exception object expected");
-            }
-
-            try
-            {
-                controller.PanLeft(20);
-                Assert.Fail("Failed to throw on Pan");
-            }
-            catch (PanTiltControllerException ex)
-            {
-                //we expect an exception
-                Assert.IsNotNull(ex, "Exception object expected");
-            }
-
-            try
-            {
-                controller.PanRight(20);
+                controller.PanX(20);
                 Assert.Fail("Failed to throw on Pan");
             }
             catch (PanTiltControllerException ex)
@@ -72,8 +51,8 @@ namespace KinectKannon.Tests
                 Console.WriteLine("Pan tilt ready");
                 try
                 {
-                    sender.PanRight(20);
-                    sender.PanUp(20);
+                    sender.PanX(20);
+                    sender.PanY(20);
                 }
                 catch (Exception e)
                 {
@@ -87,8 +66,8 @@ namespace KinectKannon.Tests
 
                 try
                 {
-                    sender.PanLeft(20);
-                    sender.PanDown(20);
+                    sender.PanX(-20);
+                    sender.PanY(-20);
                 }
                 catch (Exception e)
                 {
