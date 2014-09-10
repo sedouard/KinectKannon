@@ -32,6 +32,7 @@ namespace KinectKannon
     using System.Timers;
     using KinectKannon.Autonomy;
     using KinectKannon.Control;
+    using J2i.Net.XInputWrapper;
     /// <summary>
     /// Interaction logic for MainWindow
     /// </summary>
@@ -60,7 +61,6 @@ namespace KinectKannon
 
         private AudioBeamFrameReader audioReader = null;
 
-        private const uint PAN_TILT_SPEED_LIMIT = 60;
 
         /// <summary>
         /// Array for the bodies
@@ -146,6 +146,8 @@ namespace KinectKannon
 
         private PanTiltController panTilt;
         private FiringController firingControl;
+        //we always have just 1 controller
+        private XboxController handHeldController = XboxController.RetrieveController(0);
         public MainWindow()
         {
             // one sensor is currently supported
@@ -201,12 +203,7 @@ namespace KinectKannon
             //register the code which will tell the system what to do when keys are pressed
             SetupKeyHandlers();
 
-	    //Setup Contoller
-            /**
-            _selectedController = XboxController.RetrieveController(0);
-            _selectedController.StateChanged += _selectedController_StateChanged;
-            XboxController.StartPolling();
-             * **/
+            
             //initialize
             panTilt = PanTiltController.GetOrCreatePanTiltController();
             firingControl = FiringController.GetOrCreateFiringController();
@@ -258,6 +255,8 @@ namespace KinectKannon
             // Try to use the controller
             
         }
+
+        
 
         protected override void OnClosing(CancelEventArgs e)
         {
@@ -381,7 +380,14 @@ namespace KinectKannon
 
         private void SetupKeyHandlers()
         {
+            //register for keyboard events
             KeyDown += MainWindow_KeyDown;
+
+            //register for xbox controller events
+            handHeldController = XboxController.RetrieveController(0);
+            handHeldController.StateChanged += handHeldController_StateChanged;
+            XboxController.StartPolling();
+
         }
 
 
@@ -400,164 +406,18 @@ namespace KinectKannon
         /// <param name="e"></param>
         async void MainWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            ////////////////////////////////////////////////////////////////////////////
-            //Manual Control Logic
-            ////////////////////////////////////////////////////////////////////////////
-            if (this.panTilt.IsReady)
-            {
-                try
-                {
-                    //Pan Up
-                    if (e.Key == System.Windows.Input.Key.Down && !this.m_PanTiltTooFarDown && this.trackingMode == TrackingMode.MANUAL)
-                    {
-                        if (this.cannonYVelocity <= PAN_TILT_SPEED_LIMIT)
-                        {
-                            this.cannonYVelocity += 20;
-                        }
-                        //set too far to false. if its stil too far the next key event handler will set to true
-                        this.m_PanTiltTooFarUp = false;
-                        this.panTilt.PanY(this.cannonYVelocity);
-                    }
-                    else if (e.Key == System.Windows.Input.Key.Up && !this.m_PanTiltTooFarUp && this.trackingMode == TrackingMode.MANUAL)
-                    {
-                        if (this.cannonYVelocity >= -1 * PAN_TILT_SPEED_LIMIT)
-                        {
-                            this.cannonYVelocity -= 20;
-                        }
-                        //set too far to false. if its stil too far the next key event handler will set to true
-                        this.m_PanTiltTooFarDown = false;
-                        this.panTilt.PanY(this.cannonYVelocity);
-                    }
-                    else if (e.Key == System.Windows.Input.Key.Right && !this.m_PanTiltTooFarRight && this.trackingMode == TrackingMode.MANUAL)
-                    {
-                        if (this.cannonXVelocity >= -1 * PAN_TILT_SPEED_LIMIT)
-                        {
-                            this.cannonXVelocity -= 20;
-                        }
-                        //set too far to false. if its stil too far the next key event handler will set to true
-                        this.m_PanTiltTooFarLeft = false;
-                        this.panTilt.PanX(this.cannonXVelocity);
-                    }
-                    else if (e.Key == System.Windows.Input.Key.Left && !this.m_PanTiltTooFarLeft && this.trackingMode == TrackingMode.MANUAL)
-                    {
-                        if (this.cannonXVelocity <= PAN_TILT_SPEED_LIMIT)
-                        {
-                            this.cannonXVelocity += 20;
-                        }
-                        //set too far to false. if its stil too far the next key event handler will set to true
-                        this.m_PanTiltTooFarRight = false;
-                        this.panTilt.PanX(this.cannonXVelocity);
-                    }
-                }
-                //anything goes wrong, stop pantilt and crash the app
-                catch (Exception ex)
-                {
-                    this.panTilt.Disengage();
-                    throw ex;
-                }
-                
-            }
-            else if (e.Key == Key.NumPad1 || e.Key == Key.D1)
-            {
-                this.trackingMode = TrackingMode.MANUAL;
-                AudioViewBox.Visibility = Visibility.Hidden;
-            }
-            else if (e.Key == Key.NumPad2 || e.Key == Key.D2 )
-            {
-                this.trackingMode = TrackingMode.SKELETAL;
-                AudioViewBox.Visibility = Visibility.Hidden;
-            }
-            else if (e.Key == Key.NumPad3 || e.Key == Key.D3 )
-            {
-                this.trackingMode = TrackingMode.AUDIBLE;
-                AudioViewBox.Visibility = Visibility.Visible;
-            }
-            //The ordering rational of the key assignments is based on 
-            //the bottom row of the keyboard
-            else if (this.trackingMode == TrackingMode.SKELETAL &&
-                e.Key == Key.Z)
-            {
-                    this.requestedTrackedSkeleton = SkeletalLetter.A;
-            }
-            else if (this.trackingMode == TrackingMode.SKELETAL &&
-                e.Key == Key.X)
-            {
-                    this.requestedTrackedSkeleton = SkeletalLetter.B;
-            }
-            else if (this.trackingMode == TrackingMode.SKELETAL &&
-                e.Key == Key.C)
-            {
-                    this.requestedTrackedSkeleton = SkeletalLetter.C;
-            }
-            else if (this.trackingMode == TrackingMode.SKELETAL &&
-                e.Key == Key.V)
-            {
-                    this.requestedTrackedSkeleton = SkeletalLetter.D;
-            }
-            else if (this.trackingMode == TrackingMode.SKELETAL &&
-                e.Key == Key.B)
-            {
-                    this.requestedTrackedSkeleton = SkeletalLetter.E;
-            }
-            else if (this.trackingMode == TrackingMode.SKELETAL &&
-                e.Key == Key.N)
-            {
-                    this.requestedTrackedSkeleton = SkeletalLetter.F;
-            }
-
-            /////////////////////////////////////////////////////////
-            //Rage Safteys - Makey Makey Board Provides These Events
-            /////////////////////////////////////////////////////////
-            try
-            {
-                //Cannon is too high
-                if (e.Key == Key.A && !m_PanTiltTooFarUp)
-                {
-                    m_PanTiltTooFarUp = true;
-                    this.cannonYVelocity = 0;
-                    this.panTilt.PanY(this.cannonYVelocity);
-                }
-                //Cannon is too low
-                else if (e.Key == Key.S && !m_PanTiltTooFarDown)
-                {
-                    m_PanTiltTooFarDown = true;
-                    this.cannonYVelocity = 0;
-                    this.panTilt.PanY(this.cannonYVelocity);
-                }
-                //Cannon is too far right
-                else if (e.Key == Key.D && !m_PanTiltTooFarRight)
-                {
-                    this.m_PanTiltTooFarRight = true;
-                    this.cannonXVelocity = 0;
-                    this.panTilt.PanX(this.cannonXVelocity);
-                }
-                //Cannon is too far left
-                else if (e.Key == Key.F && !m_PanTiltTooFarLeft)
-                {
-                    m_PanTiltTooFarLeft = true;
-                    this.cannonXVelocity = 0;
-                    this.panTilt.PanX(this.cannonXVelocity);
-                }
-            }
-            //if anything at all goes wrong we gotta stop the pantilt and crash the app
-            catch(Exception ex)
-            {
-                this.panTilt.Disengage();
-                throw ex;
-            }
-
-            if (e.Key == Key.P)
-            {
-                //toggle the safety
-                this.firingControl.VirtualSafetyOn = !this.firingControl.VirtualSafetyOn;
-            }
-            //MAYBE WE SHOULD PICK A HARDER TO PRESS KEY THAN THE SPACE BAR?
-            if (e.Key == Key.Space)
-            {
-                await this.firingControl.Fire(300);
-            }
+            //passing the xbox controlle here effectivley makes the xbox control able to override the keyboard
+            await UserInputControl.HandleInput(this, panTilt, firingControl, e.Key, this.handHeldController);
         }
 
+        
+        async void handHeldController_StateChanged(object sender, XboxControllerStateChangedEventArgs e)
+        {
+            if (null != panTilt && null != firingControl)
+            {
+                await UserInputControl.HandleInput(this, panTilt, firingControl, null, this.handHeldController);
+            }
+        }
         /// <summary>
         /// Handles the color frame data arriving from the sensor
         /// </summary>
@@ -675,6 +535,59 @@ namespace KinectKannon
             }
         }
 
+        /// <summary>
+        /// The Skeleton the user is requesting to be tracked
+        /// </summary>
+        public SkeletalLetter RequestedTrackedSkeleton
+        {
+            get
+            {
+                return requestedTrackedSkeleton;
+            }
+            set
+            {
+                requestedTrackedSkeleton = value;
+            }
+        }
+
+        /// <summary>
+        /// The current tracking state of the system
+        /// </summary>
+        public TrackingMode TrackingMode
+        {
+            get
+            {
+                return trackingMode;
+            }
+            set
+            {
+                trackingMode = value;
+            }
+        }
+
+        public double CannonXVelocity
+        {
+            get
+            {
+                return this.cannonXVelocity;
+            }
+            set
+            {
+                this.cannonXVelocity = value;
+            }
+        }
+
+        public double CannonYVelocity
+        {
+            get
+            {
+                return this.cannonYVelocity;
+            }
+            set
+            {
+                this.cannonYVelocity = value;
+            }
+        }
         public string CannonTheta
         {
             get
