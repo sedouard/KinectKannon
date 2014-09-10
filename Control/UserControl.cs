@@ -21,6 +21,9 @@ namespace KinectKannon.Control
         private const int XINPUT_MAX_X = 32768;
         private const int XINPUT_MAX_Y = 32768;
         private const int XINPUT_RESTING_Y = -2631;
+        private const int VIBRATION_INTENSITY = 50;
+        
+   
 
         /// <summary>
         /// The time the valve will remain open on a single fire
@@ -186,20 +189,20 @@ namespace KinectKannon.Control
                 }
             }
             
-            if (key == Key.NumPad1 || key == Key.D1)
+            if (key == Key.NumPad1 || key == Key.D1 || handHeldController.IsXPressed)
             {
                 mainWindow.TrackingMode = TrackingMode.MANUAL;
-                mainWindow.AudioViewBox.Visibility = Visibility.Hidden;
+                //mainWindow.AudioViewBox.Visibility = Visibility.Hidden;
             }
-            else if (key == Key.NumPad2 || key == Key.D2 )
+            else if (key == Key.NumPad2 || key == Key.D2 || handHeldController.IsAPressed)
             {
                 mainWindow.TrackingMode = TrackingMode.SKELETAL;
-                mainWindow.AudioViewBox.Visibility = Visibility.Hidden;
+                //mainWindow.AudioViewBox.Visibility = Visibility.Hidden;
             }
-            else if (key == Key.NumPad3 || key == Key.D3 )
+            else if (key == Key.NumPad3 || key == Key.D3 || handHeldController.IsBPressed)
             {
                 mainWindow.TrackingMode = TrackingMode.AUDIBLE;
-                mainWindow.AudioViewBox.Visibility = Visibility.Visible;
+                //mainWindow.AudioViewBox.Visibility = Visibility.Visible;
             }
             //The ordering rational of the key assignments is based on 
             //the bottom row of the keyboard
@@ -234,6 +237,19 @@ namespace KinectKannon.Control
                 mainWindow.RequestedTrackedSkeleton = SkeletalLetter.F;
             }
 
+            if (handHeldController.IsDPadRightPressed)
+            {
+                mainWindow.RequestedTrackedSkeleton++;
+                //Console.WriteLine(mainWindow.RequestedTrackedSkeleton);
+            }
+            if (handHeldController.IsDPadLeftPressed)
+            {
+                mainWindow.RequestedTrackedSkeleton--;
+            }
+            if (handHeldController.IsDPadDownPressed)
+            {
+                mainWindow.RequestedTrackedSkeleton = SkeletalLetter.A;
+            }
             /////////////////////////////////////////////////////////
             //Rage Safteys - Makey Makey Board Provides These Events
             /////////////////////////////////////////////////////////
@@ -275,16 +291,20 @@ namespace KinectKannon.Control
                 throw ex;
             }
 
-            if (key == Key.P)
+            if (key == Key.P || (handHeldController.IsLeftShoulderPressed & handHeldController.IsRightShoulderPressed))
             {
                 //toggle the safety
                 firingController.VirtualSafetyOn = !firingController.VirtualSafetyOn;
+                //handHeldController.Vibrate(40.0, 40.0, 10.0);
             }
             //MAYBE WE SHOULD PICK A HARDER TO PRESS KEY THAN THE SPACE BAR?
-            if (key == Key.Space)
+            if (key == Key.Space || (handHeldController.RightTrigger > 250 && handHeldController.LeftTrigger > 250))
             {
+                handHeldController.Vibrate(VIBRATION_INTENSITY, VIBRATION_INTENSITY, new TimeSpan(1));
                 await firingController.Fire(300);
             }
+
+            
         }
     }
 }
