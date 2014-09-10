@@ -17,37 +17,37 @@ namespace KinectKannon.Autonomy
     /// </summary>
     class KannonAutonomy
     {
-        private double SkeletalXDist;
-        private double SkeletalYDist;
-        private double SkeletalTheta;
+        private double originXDist;
+        private double originYDist;
+        private double originTheta;
 
         public KannonAutonomy()
         {
-            SkeletalXDist = 0;
-            SkeletalYDist = 0;
-            SkeletalTheta = 0;
+            originXDist = 0;
+            originYDist = 0;
+            originTheta = 0;
         }
         public double getXDist
         {
             get
             {
-                return SkeletalXDist;
+                return originXDist;
             }
         }
         public double getYDist
         {
             get
             {
-                return SkeletalYDist;
+                return originYDist;
             }
         }
         public double getTheta(Double xDist, Double yDist)
         {
             if (xDist != 0 && yDist != 0)
             {
-                SkeletalTheta = Math.Atan(yDist / xDist) * 180 / Math.PI;
+                originTheta = Math.Atan(yDist / xDist) * 180 / Math.PI;
             }
-            return SkeletalTheta;
+            return originTheta;
         }
         public void skeletalAutonomy(Body[] targetBodies, int? indexNumb)
         {
@@ -57,10 +57,10 @@ namespace KinectKannon.Autonomy
                 if (body.IsTracked && indexNumb == x)
                 {
                     Joint spine = body.Joints[JointType.Neck];
-                    SkeletalXDist = spine.Position.X;
-                    SkeletalYDist = spine.Position.Y;
-                    getTheta(SkeletalXDist, SkeletalYDist);
-                    Console.Write("This is X" + SkeletalXDist + "This is Y" + SkeletalYDist);
+                    originXDist = spine.Position.X;
+                    originYDist = spine.Position.Y;
+                    getTheta(originXDist, originYDist);
+                    Console.Write("This is X" + originXDist + "This is Y" + originYDist);
                     x++;
                 }
             }

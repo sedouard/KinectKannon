@@ -194,50 +194,55 @@ namespace KinectKannon
 
         void audioReader_FrameArrived(object sender, AudioBeamFrameArrivedEventArgs e)
         {
-            AudioBeamFrameReference frameReference = e.FrameReference;
-
-            try
+            //ADDED FOR TEST PURPOSES
+            if (this.trackingMode == TrackingMode.AUDIBLE)
             {
-                AudioBeamFrameList frameList = frameReference.AcquireBeamFrames();
+                AudioBeamFrameReference frameReference = e.FrameReference;
 
-                if (frameList != null)
+                try
                 {
-                    // AudioBeamFrameList is IDisposable
-                    using (frameList)
+                    AudioBeamFrameList frameList = frameReference.AcquireBeamFrames();
+
+                    if (frameList != null)
                     {
-                        // Only one audio beam is supported. Get the sub frame list for this beam
-                        IReadOnlyList<AudioBeamSubFrame> subFrameList = frameList[0].SubFrames;
-
-                        // Loop over all sub frames, extract audio buffer and beam information
-                        foreach (AudioBeamSubFrame subFrame in subFrameList)
+                        // AudioBeamFrameList is IDisposable
+                        using (frameList)
                         {
-                            // Check if beam angle and/or confidence have changed
-                            bool updateBeam = false;
+                            // Only one audio beam is supported. Get the sub frame list for this beam
+                            IReadOnlyList<AudioBeamSubFrame> subFrameList = frameList[0].SubFrames;
 
-                            if (subFrame.BeamAngle != this.beamAngle)
+                            // Loop over all sub frames, extract audio buffer and beam information
+                            foreach (AudioBeamSubFrame subFrame in subFrameList)
                             {
-                                this.beamAngle = subFrame.BeamAngle;
-                                updateBeam = true;
-                            }
+                                // Check if beam angle and/or confidence have changed
+                                bool updateBeam = false;
 
-                            if (subFrame.BeamAngleConfidence != this.beamAngleConfidence)
-                            {
-                                this.beamAngleConfidence = subFrame.BeamAngleConfidence;
-                                updateBeam = true;
-                            }
+                                if (subFrame.BeamAngle != this.beamAngle)
+                                {
+                                    this.beamAngle = subFrame.BeamAngle;
+                                    updateBeam = true;
+                                }
 
-                            if (updateBeam)
-                            {
-                                // Refresh display of audio beam
-                                this.AudioBeamChanged();
+                                if (subFrame.BeamAngleConfidence != this.beamAngleConfidence)
+                                {
+                                    this.beamAngleConfidence = subFrame.BeamAngleConfidence;
+                                    updateBeam = true;
+                                }
+
+                                if (updateBeam)
+                                {
+                                    // Refresh display of audio beam
+                                    this.AudioBeamChanged();
+                                }
                             }
                         }
                     }
                 }
-            }
-            catch (Exception)
-            {
-                // Ignore if the frame is no longer available
+
+                catch (Exception)
+                {
+                    // Ignore if the frame is no longer available
+                }
             }
         }
 
@@ -260,7 +265,7 @@ namespace KinectKannon
 
             // Convert from radians to degrees for display purposes
             float beamAngleInDeg = this.beamAngle * 180.0f / (float)Math.PI;
-
+            Console.Write("This is the Angle" + beamAngle + "\n");
             // Rotate gradient to match angle
             beamBarRotation.Angle = -beamAngleInDeg;
             beamNeedleRotation.Angle = -beamAngleInDeg;
