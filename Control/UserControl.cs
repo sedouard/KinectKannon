@@ -16,7 +16,7 @@ namespace KinectKannon.Control
         private static bool s_PanTiltTooFarUp = false;
         private static bool s_PanTiltTooFarLeft = false;
         private static bool s_PanTiltTooFarRight = false;
-        private const uint PAN_TILT_SPEED_LIMIT = 60;
+        public const uint PAN_TILT_SPEED_LIMIT = 60;
         private const int XINPUT_RESTING_X = -1200;
         private const int XINPUT_MAX_X = 32768;
         private const int XINPUT_MAX_Y = 32768;
@@ -42,18 +42,13 @@ namespace KinectKannon.Control
             SAFTEY_TOGGLE
         }
 
-        //Static for now... not sure if we actually need to make this class instatiable
-        public static async Task HandleInput(MainWindow mainWindow, PanTiltController panTilt, FiringController firingController, 
-            Key? key, XboxController handHeldController){
-            ////////////////////////////////////////////////////////////////////////////
-            //Manual Control Logic
-            ////////////////////////////////////////////////////////////////////////////
-            if (panTilt.IsReady)
-            {
+        private static async Task HandlePanTilt(MainWindow mainWindow, PanTiltController panTilt, FiringController firingController,
+            Key key)
+        {
             try
             {
                 //Pan Up
-                    if ((key == System.Windows.Input.Key.Down || handHeldController.LeftThumbStick.Y < 0) && !s_PanTiltTooFarDown && mainWindow.TrackingMode == TrackingMode.MANUAL)
+                if (key == System.Windows.Input.Key.Down && !s_PanTiltTooFarDown && mainWindow.TrackingMode == TrackingMode.MANUAL)
                 {
                     if (mainWindow.CannonYVelocity <= PAN_TILT_SPEED_LIMIT)
                     {
@@ -100,8 +95,83 @@ namespace KinectKannon.Control
                 panTilt.Disengage();
                 throw ex;
             }
-                
         }
+        private static double ConvertXInputCoordinateToVelocity(double xInputValue)
+        {
+            bool isNegative = false;
+
+            if (xInputValue < 0.0)
+            {
+                isNegative = true;
+            }
+
+            double zeroValueX = XINPUT_RESTING_X;
+            double maxValueX = XINPUT_MAX_X;
+
+            var distance = maxValueX - zeroValueX;
+
+            double ratio = Math.Abs(xInputValue) / distance;
+            Console.WriteLine("Ratio -" + ratio);
+            if (isNegative)
+            {
+                return ratio * PAN_TILT_SPEED_LIMIT * -1;
+            }
+            else
+            {
+                return ratio * PAN_TILT_SPEED_LIMIT;
+            }
+        }
+
+
+        private static async Task HandleXboxInputPanTilt(MainWindow mainWindow, PanTiltController panTilt, FiringController firingController,
+            XboxController handHeldController)
+        {
+            try
+            {
+                var convertedXboxInputX = ConvertXInputCoordinateToVelocity(handHeldController.LeftThumbStick.X);
+                var convertedXboxInputY = ConvertXInputCoordinateToVelocity(handHeldController.LeftThumbStick.Y);
+                Console.WriteLine("X Value Converted - " + convertedXboxInputX);
+                //Pan Up
+                if (convertedXboxInputY <= PAN_TILT_SPEED_LIMIT && !s_PanTiltTooFarDown && mainWindow.TrackingMode == TrackingMode.MANUAL)
+                {
+                    s_PanTiltTooFarUp = false;
+                    mainWindow.CannonYVelocity = convertedXboxInputY;
+                    panTilt.PanY(mainWindow.CannonYVelocity);
+                }
+                if (convertedXboxInputY >= -1 * PAN_TILT_SPEED_LIMIT && !s_PanTiltTooFarUp && mainWindow.TrackingMode == TrackingMode.MANUAL)
+                {
+
+                    mainWindow.CannonYVelocity = convertedXboxInputY;
+                    //set too far to false. if its stil too far the next key event handler will set to true
+                    s_PanTiltTooFarDown = false;
+                    panTilt.PanY(mainWindow.CannonYVelocity);
+                }
+                if (mainWindow.CannonXVelocity >= -1 * PAN_TILT_SPEED_LIMIT && !s_PanTiltTooFarRight && mainWindow.TrackingMode == TrackingMode.MANUAL)
+                {
+
+                    mainWindow.CannonXVelocity -= convertedXboxInputX;
+                    //set too far to false. if its stil too far the next key event handler will set to true
+                    s_PanTiltTooFarLeft = false;
+                    panTilt.PanX(mainWindow.CannonXVelocity);
+                }
+                if (mainWindow.CannonXVelocity <= PAN_TILT_SPEED_LIMIT && !s_PanTiltTooFarLeft && mainWindow.TrackingMode == TrackingMode.MANUAL)
+                {
+                    mainWindow.CannonXVelocity = convertedXboxInputX;
+
+                    //set too far to false. if its stil too far the next key event handler will set to true
+                    s_PanTiltTooFarRight = false;
+                    panTilt.PanX(mainWindow.CannonXVelocity);
+                }
+            }
+            //anything goes wrong, stop pantilt and crash the app
+            catch (Exception ex)
+            {
+                panTilt.Disengage();
+                throw ex;
+            }
+
+        }
+
 
         //Static for now... not sure if we actually need to make this class instatiable
         public static async Task HandleInput(MainWindow mainWindow, PanTiltController panTilt, FiringController firingController, 
@@ -124,17 +194,17 @@ namespace KinectKannon.Control
             if (key == Key.NumPad1 || key == Key.D1 || handHeldController.IsXPressed)
             {
                 mainWindow.TrackingMode = TrackingMode.MANUAL;
-                //mainWindow.AudioViewBox.Visibility = Visibility.Hidden;
+                mainWindow.AudioMeterVisibility = Visibility.Hidden;
             }
             else if (key == Key.NumPad2 || key == Key.D2 || handHeldController.IsAPressed)
             {
                 mainWindow.TrackingMode = TrackingMode.SKELETAL;
-                //mainWindow.AudioViewBox.Visibility = Visibility.Hidden;
+                mainWindow.AudioMeterVisibility = Visibility.Hidden;
             }
             else if (key == Key.NumPad3 || key == Key.D3 || handHeldController.IsBPressed)
             {
                 mainWindow.TrackingMode = TrackingMode.AUDIBLE;
-                //mainWindow.AudioViewBox.Visibility = Visibility.Visible;
+                mainWindow.AudioMeterVisibility = Visibility.Visible;
             }
             //The ordering rational of the key assignments is based on 
             //the bottom row of the keyboard

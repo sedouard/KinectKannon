@@ -184,6 +184,10 @@ namespace KinectKannon
 
             this.audioReader.FrameArrived += audioReader_FrameArrived;
 
+            //on startup hide the audio meter
+            AudioMeterVisibility = Visibility.Hidden;
+
+
             // set IsAvailableChanged event notifier
             this.kinectSensor.IsAvailableChanged += this.Sensor_IsAvailableChanged;
 
@@ -347,8 +351,11 @@ namespace KinectKannon
                                 this.AudioBeamChanged();
                             }
                         }
+
                     }
                 }
+
+
             }
 
             catch (Exception)
@@ -381,6 +388,8 @@ namespace KinectKannon
             // Rotate gradient to match angle
             beamBarRotation.Angle = -beamAngleInDeg;
             beamNeedleRotation.Angle = -beamAngleInDeg;
+
+         //   if(Tracking)
         }
 
         private void SetupKeyHandlers()
@@ -430,6 +439,9 @@ namespace KinectKannon
         /// <param name="e">event arguments</param>
         private void Reader_ColorFrameArrived(object sender, ColorFrameArrivedEventArgs e)
         {
+            //update the audio view box visibility
+
+            this.AudioViewBox.Visibility = this.AudioMeterVisibility;
             //render color layer
             this.colorRenderer.Reader_ColorFrameArrived(sender, e);
             elapsedFrames++;
@@ -582,6 +594,11 @@ namespace KinectKannon
             }
         }
 
+        public Visibility AudioMeterVisibility
+        {
+            get;
+            set;
+        }
         public double CannonYVelocity
         {
             get
