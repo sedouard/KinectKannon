@@ -174,7 +174,7 @@ namespace KinectKannon.Rendering
         /// <param name="e">event arguments</param>
         public void Reader_ColorFrameArrived(object sender, ColorFrameArrivedEventArgs e)
         {
-
+            
             // ColorFrame is IDisposable
             using (ColorFrame colorFrame = e.FrameReference.AcquireFrame())
             {

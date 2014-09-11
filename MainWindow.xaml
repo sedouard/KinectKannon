@@ -95,7 +95,7 @@
                  Panel.ZIndex="2"
                  OpacityMask="Black"
                  Stretch="Uniform"
-                 Visibility="Hidden">
+                 Visibility="{Binding AudioMeterVisibility}">
             <Canvas Width="1"
                     Height="1"
                     Margin="0"
