@@ -17,37 +17,49 @@ namespace KinectKannon.Autonomy
     /// </summary>
     class KannonAutonomy
     {
-        private double SkeletalXDist;
-        private double SkeletalYDist;
-        private double SkeletalTheta;
+        //Return the Calculated X, y and theta of selected object
+        private double originXDist;
+        private double originYDist;
+        private double originTheta;
+        /// <summary>
+        /// Range for screen in respect to X Plane
+        /// </summary>
+        public const double RANGE_X=1;
+        /// <summary>
+        /// Range for screen in respect to Y Plane
+        /// </summary>
+        public const double RANGE_Y =1;
 
-        public KannonAutonomy()
+        //Initializes the distances to be 0
+       public KannonAutonomy()
         {
-            SkeletalXDist = 0;
-            SkeletalYDist = 0;
-            SkeletalTheta = 0;
+            originXDist = 0;
+            originYDist = 0;
+            originTheta = 0;
         }
+        //Returns the horizontal distance from the object to the origin
         public double getXDist
         {
             get
             {
-                return SkeletalXDist;
+                return originXDist;
             }
         }
+        //Returns the virtical distance from the object to the origin
         public double getYDist
         {
             get
             {
-                return SkeletalYDist;
+                return originYDist;
             }
         }
         public double getTheta(Double xDist, Double yDist)
         {
             if (xDist != 0 && yDist != 0)
             {
-                SkeletalTheta = Math.Atan(yDist / xDist) * 180 / Math.PI;
+                originTheta = Math.Atan(yDist / xDist) * 180 / Math.PI;
             }
-            return SkeletalTheta;
+            return originTheta;
         }
         public void skeletalAutonomy(Body[] targetBodies, int? indexNumb)
         {
@@ -57,11 +69,18 @@ namespace KinectKannon.Autonomy
                 if (body.IsTracked && indexNumb == x)
                 {
                     Joint spine = body.Joints[JointType.Neck];
-                    SkeletalXDist = spine.Position.X;
-                    SkeletalYDist = spine.Position.Y;
-                    getTheta(SkeletalXDist, SkeletalYDist);
-                    Console.Write("This is X" + SkeletalXDist + "This is Y" + SkeletalYDist);
+                    originXDist = spine.Position.X;
+                    originYDist = spine.Position.Y;
+                    getTheta(originXDist, originYDist);
+                    Console.Write("This is X" + originXDist + "This is Y" + originYDist);
                     x++;
+                }
+                    //If a body entity is not tracked, return to default values
+                else if(!body.IsTracked && indexNumb == x)
+                {
+                    originXDist = 0;
+                    originYDist = 0;
+                    originTheta = 0;
                 }
             }
         }

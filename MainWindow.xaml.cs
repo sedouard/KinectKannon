@@ -306,6 +306,9 @@ namespace KinectKannon
         **/
         void audioReader_FrameArrived(object sender, AudioBeamFrameArrivedEventArgs e)
         {
+            //ADDED FOR TEST PURPOSES
+            if (this.trackingMode == TrackingMode.AUDIBLE)
+            {
             AudioBeamFrameReference frameReference = e.FrameReference;
 
             try
@@ -347,10 +350,12 @@ namespace KinectKannon
                     }
                 }
             }
+
             catch (Exception)
             {
                 // Ignore if the frame is no longer available
             }
+        }
         }
 
         /// <summary>
@@ -372,7 +377,7 @@ namespace KinectKannon
 
             // Convert from radians to degrees for display purposes
             float beamAngleInDeg = this.beamAngle * 180.0f / (float)Math.PI;
-
+            Console.Write("This is the Angle" + beamAngle + "\n");
             // Rotate gradient to match angle
             beamBarRotation.Angle = -beamAngleInDeg;
             beamNeedleRotation.Angle = -beamAngleInDeg;
@@ -696,8 +701,25 @@ namespace KinectKannon
                     // to return X, Y, position and Theta angle of the SpineMid Joint.
                     {
                         skeletonAutomator.skeletalAutonomy(this.bodies, trackIndex);
-                        this.cannonXVelocity = skeletonAutomator.getXDist;
-                        this.cannonYVelocity = skeletonAutomator.getYDist;
+                        //Use the same exact user input speed limit for automated contorl
+                        this.cannonXVelocity = skeletonAutomator.getXDist * UserInputControl.PAN_TILT_SPEED_LIMIT;
+                        this.cannonYVelocity = skeletonAutomator.getYDist * UserInputControl.PAN_TILT_SPEED_LIMIT;
+
+                        if (panTilt.IsReady)
+                        {
+                            panTilt.PanX(this.cannonXVelocity);
+                            panTilt.PanY(this.cannonYVelocity *-1);
+                        }
+                    }
+                    else
+                    {
+                        //no skeletons to track. stop movement
+                        if (panTilt.IsReady)
+                        {
+                            panTilt.PanX(0);
+                            panTilt.PanY(0);
+                        }
+                        
                     }
                     colorRenderer.DrawBodies(this.bodies, this.coordinateMapper, trackIndex);
                 }   
