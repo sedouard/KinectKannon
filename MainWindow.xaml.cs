@@ -696,8 +696,25 @@ namespace KinectKannon
                     // to return X, Y, position and Theta angle of the SpineMid Joint.
                     {
                         skeletonAutomator.skeletalAutonomy(this.bodies, trackIndex);
-                        this.cannonXVelocity = skeletonAutomator.getXDist;
-                        this.cannonYVelocity = skeletonAutomator.getYDist;
+                        //Use the same exact user input speed limit for automated contorl
+                        this.cannonXVelocity = skeletonAutomator.getXDist * UserInputControl.PAN_TILT_SPEED_LIMIT;
+                        this.cannonYVelocity = skeletonAutomator.getYDist * UserInputControl.PAN_TILT_SPEED_LIMIT;
+
+                        if (panTilt.IsReady)
+                        {
+                            panTilt.PanX(this.cannonXVelocity);
+                            panTilt.PanY(this.cannonYVelocity *-1);
+                        }
+                    }
+                    else
+                    {
+                        //no skeletons to track. stop movement
+                        if (panTilt.IsReady)
+                        {
+                            panTilt.PanX(0);
+                            panTilt.PanY(0);
+                        }
+                        
                     }
                     colorRenderer.DrawBodies(this.bodies, this.coordinateMapper, trackIndex);
                 }   

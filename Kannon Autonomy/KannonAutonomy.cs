@@ -21,6 +21,14 @@ namespace KinectKannon.Autonomy
         private double originXDist;
         private double originYDist;
         private double originTheta;
+        /// <summary>
+        /// Range for screen in respect to X Plane
+        /// </summary>
+        public const double RANGE_X=1;
+        /// <summary>
+        /// Range for screen in respect to Y Plane
+        /// </summary>
+        public const double RANGE_Y =1;
 
         //Initializes the distances to be 0
        public KannonAutonomy()
@@ -66,6 +74,13 @@ namespace KinectKannon.Autonomy
                     getTheta(originXDist, originYDist);
                     Console.Write("This is X" + originXDist + "This is Y" + originYDist);
                     x++;
+                }
+                    //If a body entity is not tracked, return to default values
+                else if(!body.IsTracked && indexNumb == x)
+                {
+                    originXDist = 0;
+                    originYDist = 0;
+                    originTheta = 0;
                 }
             }
         }
