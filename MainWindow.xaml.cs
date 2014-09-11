@@ -58,9 +58,13 @@ namespace KinectKannon
         /// Reader for color frames
         /// </summary>
         private ColorFrameReader colorFrameReader = null;
-
+        
+        /// <summary>
+        /// 
+        /// </summary>
         private AudioBeamFrameReader audioReader = null;
 
+        private InfraredFrameReader infraredFrameReader = null;
 
         /// <summary>
         /// Array for the bodies
@@ -88,6 +92,8 @@ namespace KinectKannon
         /// The current tracking mode of the system
         /// </summary>
         private TrackingMode trackingMode = TrackingMode.MANUAL;
+
+        private DisplayMode displayMode = DisplayMode.COLOR;
 
         /// <summary>
         /// The skeleton that is requested to be tracked
@@ -168,7 +174,10 @@ namespace KinectKannon
             
             FrameDescription colorFrameDescription = this.kinectSensor.ColorFrameSource.CreateFrameDescription(ColorImageFormat.Bgra);
 
-            colorRenderer = new ColorFrameRenderer(colorFrameDescription.Width, colorFrameDescription.Height, jointFrameDescription.Width, jointFrameDescription.Height);
+            FrameDescription infraredFrameDescription = this.kinectSensor.InfraredFrameSource.FrameDescription;
+
+            colorRenderer = new ColorFrameRenderer(colorFrameDescription.Width, colorFrameDescription.Height, jointFrameDescription.Width, jointFrameDescription.Height,
+                infraredFrameDescription.Width, infraredFrameDescription.Height);
             var drawingGroup = new DrawingGroup();
             var drawingImage = new DrawingImage(drawingGroup);
             hudRenderer = new HudRenderer(drawingGroup, drawingImage, colorFrameDescription.Width, colorFrameDescription.Height);
@@ -187,6 +196,14 @@ namespace KinectKannon
             //on startup hide the audio meter
             AudioMeterVisibility = Visibility.Hidden;
 
+            this.infraredFrameReader = this.kinectSensor.InfraredFrameSource.OpenReader();
+ 
+            //Infrared
+            // open the reader for the depth frames
+            this.infraredFrameReader = this.kinectSensor.InfraredFrameSource.OpenReader();
+
+            // wire handler for frame arrival
+            this.infraredFrameReader.FrameArrived += this.colorRenderer.Reader_InfraredFrameArrived;
 
             // set IsAvailableChanged event notifier
             this.kinectSensor.IsAvailableChanged += this.Sensor_IsAvailableChanged;
@@ -250,6 +267,7 @@ namespace KinectKannon
                 FiringSafety = this.firingControl.VirtualSafetyOn,
                 FiringSafetyText = safetyText
             });
+
 
             
 
@@ -500,7 +518,19 @@ namespace KinectKannon
         {
             get
             {
-                return this.colorRenderer.ImageSource;
+                if (this.displayMode == DisplayMode.COLOR)
+                {
+                    return this.colorRenderer.ImageSource;
+                }
+                else if(this.displayMode == DisplayMode.INFRARED)
+                {
+                    return this.colorRenderer.InfraredSource;
+                }
+                else
+                {
+                    //default, return color source
+                    return this.colorRenderer.ImageSource;
+                }
             }
         }
 
@@ -579,6 +609,21 @@ namespace KinectKannon
             set
             {
                 trackingMode = value;
+            }
+        }
+
+        /// <summary>
+        /// The current tracking state of the system
+        /// </summary>
+        public DisplayMode DisplayMode
+        {
+            get
+            {
+                return displayMode;
+            }
+            set
+            {
+                displayMode = value;
             }
         }
 
@@ -738,7 +783,7 @@ namespace KinectKannon
                         }
                         
                     }
-                    colorRenderer.DrawBodies(this.bodies, this.coordinateMapper, trackIndex);
+                    colorRenderer.DrawBodies(this.bodies, this.coordinateMapper, this.displayMode, trackIndex);
                 }   
             }
         }
@@ -780,6 +825,12 @@ namespace KinectKannon
         D,
         E,
         F
+    }
+
+    public enum DisplayMode
+    {
+        COLOR,
+        INFRARED
     }
 
     /// <summary>
