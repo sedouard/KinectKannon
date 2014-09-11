@@ -1,4 +1,4 @@
-﻿﻿//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 // <copyright file="MainWindow.xaml.cs" company="Microsoft">
 //     Copyright (c) Microsoft Corporation.  All rights reserved.
 // </copyright>
@@ -306,6 +306,9 @@ namespace KinectKannon
         **/
         void audioReader_FrameArrived(object sender, AudioBeamFrameArrivedEventArgs e)
         {
+            //ADDED FOR TEST PURPOSES
+            if (this.trackingMode == TrackingMode.AUDIBLE)
+            {
             AudioBeamFrameReference frameReference = e.FrameReference;
 
             try
@@ -347,10 +350,12 @@ namespace KinectKannon
                     }
                 }
             }
+
             catch (Exception)
             {
                 // Ignore if the frame is no longer available
             }
+        }
         }
 
         /// <summary>
@@ -372,7 +377,7 @@ namespace KinectKannon
 
             // Convert from radians to degrees for display purposes
             float beamAngleInDeg = this.beamAngle * 180.0f / (float)Math.PI;
-
+            Console.Write("This is the Angle" + beamAngle + "\n");
             // Rotate gradient to match angle
             beamBarRotation.Angle = -beamAngleInDeg;
             beamNeedleRotation.Angle = -beamAngleInDeg;
