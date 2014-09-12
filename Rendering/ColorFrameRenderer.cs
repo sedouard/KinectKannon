@@ -148,9 +148,10 @@ namespace KinectKannon.Rendering
             {
                 if (infraredFrame != null)
                 {
+                    
                     // the fastest way to process the infrared frame data is to directly access 
                     // the underlying buffer
-                    using (Microsoft.Kinect.Buffer infraredBuffer = infraredFrame.LockImageBuffer())
+                    using (Microsoft.Kinect.KinectBuffer infraredBuffer = infraredFrame.LockImageBuffer())
                     {
                         // verify data and write the new infrared frame data to the display bitmap
                         if (((infraredFrame.FrameDescription.Width * infraredFrame.FrameDescription.Height) == (infraredBuffer.Size / infraredFrame.FrameDescription.BytesPerPixel)) &&
@@ -160,6 +161,7 @@ namespace KinectKannon.Rendering
                             infraredFrameProcessed = true;
                         }
                     }
+                    
                 }
             }
 

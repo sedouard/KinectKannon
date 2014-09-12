@@ -331,7 +331,7 @@ namespace KinectKannon.Control
                 if (!firingController.VirtualSafetyOn)
                 {
                     s_VoiceSynth.SelectVoice("Microsoft Hazel Desktop");
-                    s_VoiceSynth.SpeakAsync("System Armed! Pull both triggers simultaneously to fire!");
+                    s_VoiceSynth.SpeakAsync("System Armed, Pull both triggers simultaneously to fire!");
                 }
                 else
                 {
