@@ -12,6 +12,7 @@ using KinectKannon.Rendering;
 
 namespace KinectKannon.Autonomy
 {
+    
     /// <summary>
     /// Handles calculation of X and Y positions if the SpineMid Joint for an Indexed Body during Skeletal Tracking Mode.
     /// </summary>
@@ -20,7 +21,6 @@ namespace KinectKannon.Autonomy
         //Return the Calculated X, y and theta of selected object
         private double originXDist;
         private double originYDist;
-        private double originTheta;
         /// <summary>
         /// Range for screen in respect to X Plane
         /// </summary>
@@ -35,7 +35,6 @@ namespace KinectKannon.Autonomy
         {
             originXDist = 0;
             originYDist = 0;
-            originTheta = 0;
         }
         //Returns the horizontal distance from the object to the origin
         public double getXDist
@@ -53,41 +52,30 @@ namespace KinectKannon.Autonomy
                 return originYDist;
             }
         }
-        public double getTheta(Double xDist, Double yDist)
-        {
-            if (xDist != 0 && yDist != 0)
-            {
-                originTheta = Math.Atan(yDist / xDist) * 180 / Math.PI;
-            }
-            return originTheta;
-        }
+        // This method takes in an array of bodies and returns the x and y positions 
+        // of the selected body that is passed by user (indexNumb)
         public void skeletalAutonomy(Body[] targetBodies, int? indexNumb)
         {
             int x = 0;
+            // Iterate through the array of bodies
             foreach (Body body in targetBodies)
             {
+                // Check if bod is tracked and the index position in array is the same as inputted indexBumb
                 if (body.IsTracked && indexNumb == x)
                 {
                     Joint spine = body.Joints[JointType.Neck];
                     originXDist = spine.Position.X;
                     originYDist = spine.Position.Y;
-                    getTheta(originXDist, originYDist);
                     Console.Write("This is X" + originXDist + "This is Y" + originYDist);
                     x++;
                 }
-                    //If a body entity is not tracked, return to default values
+                //If a body entity is not tracked, return to default values
                 else if(!body.IsTracked && indexNumb == x)
                 {
                     originXDist = 0;
                     originYDist = 0;
-                    originTheta = 0;
                 }
             }
-        }
-        public void audioAutonomy(float audioAngle)
-        {
-            
-
         }
     }
 
