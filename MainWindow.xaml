@@ -55,7 +55,7 @@
 
         <!--  Camera Feed + Skeletons  -->
         <Viewbox Grid.Row="1" HorizontalAlignment="Center">
-            <Image Source="{Binding ImageSource}" Stretch="UniformToFill" />
+            <Image x:Name="CameraFeedImageSource" Source="{Binding ImageSource}" Stretch="UniformToFill" />
         </Viewbox>
 
         <!--  Scope  -->

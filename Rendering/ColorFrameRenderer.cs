@@ -13,13 +13,19 @@ namespace KinectKannon.Rendering
     /// <summary>
     /// Handles all rendering of camera (color) feed as well as capabilities to draw bodies on top of the camera feed
     /// </summary>
-    class ColorFrameRenderer
+    public class ColorFrameRenderer
     {
         //TODO: Make these properties so that they are accesible publicly for tweaking the frame UI
         /// <summary>
         /// Size of the RGB pixel in the bitmap
         /// </summary>
         private readonly uint bytesPerPixel = 4;
+
+        //TODO: Make these properties so that they are accesible publicly for tweaking the frame UI
+        /// <summary>
+        /// Size of the RGB pixel in the bitmap
+        /// </summary>
+        private readonly int bytesPerInfraredPixel = 2;
 
         // <summary>
         /// Radius of drawn hand circles
@@ -82,6 +88,11 @@ namespace KinectKannon.Rendering
         private byte[] colorPixels = null;
 
         /// <summary>
+        /// Intermediate storage for frame data converted to color
+        /// </summary>
+        private ushort[] infraredPixels = null;
+
+        /// <summary>
         /// Width of display (color space)
         /// </summary>
         private int displayWidth;
@@ -101,11 +112,83 @@ namespace KinectKannon.Rendering
         private WriteableBitmap imageSource;
 
         /// <summary>
+        /// The bitmap used to stream the camera
+        /// </summary>
+        private WriteableBitmap infraredSource;
+
+        /// <summary>
         /// Constant for clamping Z values of camera space points from being negative
         /// </summary>
         private const float InferredZPositionClamp = 0.1f;
 
-        public ColorFrameRenderer(int frameWidth, int frameHeight, int jointFrameWidth, int jointFrameHeight)
+        /// <summary>
+        /// Description (width, height, etc) of the infrared frame data
+        /// </summary>
+        private FrameDescription infraredFrameDescription = null;
+
+        private int infraredWidth;
+        private int infraredHeight;
+
+        /// <summary>
+        /// Handles the infrared frame data arriving from the sensor
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
+        public void Reader_InfraredFrameArrived(object sender, InfraredFrameArrivedEventArgs e)
+        {
+            bool infraredFrameProcessed = false;
+
+            // InfraredFrame is IDisposable
+            using (InfraredFrame infraredFrame = e.FrameReference.AcquireFrame())
+            {
+                if (infraredFrame != null)
+                {
+                    // the fastest way to process the infrared frame data is to directly access 
+                    // the underlying buffer
+                    using (Microsoft.Kinect.Buffer infraredBuffer = infraredFrame.LockImageBuffer())
+                    {
+                        // verify data and write the new infrared frame data to the display bitmap
+                        if (((infraredFrame.FrameDescription.Width * infraredFrame.FrameDescription.Height) == (infraredBuffer.Size / infraredFrame.FrameDescription.BytesPerPixel)) &&
+                            (infraredFrame.FrameDescription.Width == this.infraredSource.PixelWidth) && (infraredFrame.FrameDescription.Height == this.infraredSource.PixelHeight))
+                        {
+                            this.ProcessInfraredFrameData(infraredBuffer.UnderlyingBuffer, infraredBuffer.Size);
+                            infraredFrameProcessed = true;
+                        }
+                    }
+                }
+            }
+
+            if (infraredFrameProcessed)
+            {
+                this.RenderInfraredPixels();
+            }
+        }
+
+        /// <summary>
+        /// Directly accesses the underlying image buffer of the InfraredFrame to 
+        /// create a displayable bitmap.
+        /// This function requires the /unsafe compiler option as we make use of direct
+        /// access to the native memory pointed to by the infraredFrameData pointer.
+        /// </summary>
+        /// <param name="infraredFrameData">Pointer to the InfraredFrame image data</param>
+        /// <param name="infraredFrameDataSize">Size of the InfraredFrame image data</param>
+        private unsafe void ProcessInfraredFrameData(IntPtr infraredFrameData, uint infraredFrameDataSize)
+        {
+            // infrared frame data is a 16 bit value
+            ushort* frameData = (ushort*)infraredFrameData;
+
+            // convert depth to a visual representation
+            // 2 => Byts per pixel for infrared frame
+            for (int i = 0; i < (int)(infraredFrameDataSize / 2); ++i)
+            {
+                this.infraredPixels[i] = frameData[i];
+            }
+        }
+
+
+
+        public ColorFrameRenderer(int frameWidth, int frameHeight, int jointFrameWidth, int jointFrameHeight, 
+            int infraredFrameWidth, int infraredFrameHeight)
         {
             // allocate space to put the pixels to be rendered
             this.colorPixels = new byte[frameWidth * frameHeight * this.bytesPerPixel];
@@ -113,7 +196,10 @@ namespace KinectKannon.Rendering
             this.displayHeight = frameHeight;
             this.jointDisplayWidth = jointFrameWidth;
             this.jointDisplayHeight = jointFrameHeight;
+            this.infraredWidth = infraredFrameWidth;
+            this.infraredHeight = infraredFrameHeight;
 
+            infraredPixels = new ushort[infraredFrameWidth * infraredFrameHeight];
 
             // a bone defined as a line between two joints
             this.bones = new List<Tuple<JointType, JointType>>();
@@ -154,6 +240,7 @@ namespace KinectKannon.Rendering
 
             // create the bitmap to display
             this.imageSource = new WriteableBitmap(frameWidth, frameHeight, 96.0, 96.0, PixelFormats.Pbgra32, null);
+            this.infraredSource = new WriteableBitmap(infraredFrameWidth, infraredFrameHeight, 96.0, 96.0, PixelFormats.Gray16, null);
         }
 
         /// <summary>
@@ -164,6 +251,17 @@ namespace KinectKannon.Rendering
             get
             {
                 return this.imageSource;
+            }
+        }
+
+        /// <summary>
+        /// Gets the bitmap to display
+        /// </summary>
+        public ImageSource InfraredSource
+        {
+            get
+            {
+                return this.infraredSource;
             }
         }
 
@@ -213,6 +311,18 @@ namespace KinectKannon.Rendering
         }
 
         /// <summary>
+        /// Renders the pixels to display into the writeableBitmap.
+        /// </summary>
+        private void RenderInfraredPixels()
+        {
+            this.infraredSource.WritePixels(
+                new Int32Rect(0, 0, this.infraredSource.PixelWidth, this.infraredSource.PixelHeight),
+                this.infraredPixels,
+                this.infraredSource.PixelWidth * bytesPerInfraredPixel,
+                0);
+        }
+
+        /// <summary>
         /// Draws a body
         /// </summary>
         /// <param name="joints">joints to draw</param>
@@ -252,7 +362,7 @@ namespace KinectKannon.Rendering
             }
         }
 
-        public void DrawBodies(Body[] bodies, CoordinateMapper coordinateMapper, int? targetIndex)
+        public void DrawBodies(Body[] bodies, CoordinateMapper coordinateMapper, DisplayMode displayMode, int? targetIndex)
         {
             // Draw a transparent background to set the render size
             this.imageSource.DrawRectangle(0, 0, this.displayWidth, this.displayHeight, Color.FromArgb(255, 128, 128, 128));
@@ -283,7 +393,13 @@ namespace KinectKannon.Rendering
                         
 
                         //convert joint space to color space so that we can draw skeletons on top of color feed
-                        jointPoints[jointType] = new Point((depthSpacePoint.X / this.jointDisplayWidth) * 1920, (depthSpacePoint.Y / this.jointDisplayHeight) * 1080);
+                        if (displayMode == DisplayMode.COLOR) {
+                            jointPoints[jointType] = new Point((depthSpacePoint.X / this.jointDisplayWidth) * this.displayWidth, (depthSpacePoint.Y / this.jointDisplayHeight) * this.displayHeight);
+                        }
+                        else
+                        {
+                            jointPoints[jointType] = new Point(depthSpacePoint.X / this.jointDisplayWidth,depthSpacePoint.Y / this.jointDisplayHeight);
+                        }
 
                         //check if this is the skeleton that has been targeted by system
                         //if it is we'll draw a big red circle on the skelton chest
@@ -293,7 +409,19 @@ namespace KinectKannon.Rendering
                             {
                                 var joint = jointPoints[jointType];
 
-                                this.imageSource.FillEllipse((int)joint.X, (int)joint.Y, (int)joint.X + 50, (int)joint.Y + 50, Color.FromArgb(128, 255, 0, 0));
+                                if (displayMode == DisplayMode.COLOR)
+                                {
+                                    this.imageSource.FillEllipse((int)joint.X, (int)joint.Y, (int)joint.X + 50, (int)joint.Y + 50, Color.FromArgb(128, 255, 0, 0));
+                                }
+                                else if(displayMode == DisplayMode.INFRARED)
+                                {
+                                    //we can't draw on a grayscale 16bit bitmap. So TODO on implementing the drawing here
+                                    //var pgra32Version = BitmapFactory.ConvertToPbgra32Format(this.infraredSource);
+                                    //pgra32Version.FillEllipse((int)joint.X, (int)joint.Y, (int)joint.X + 50, (int)joint.Y + 50, Colors.Black);
+                                    
+                                }
+
+
                             }
                         }
                     }

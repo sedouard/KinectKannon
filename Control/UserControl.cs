@@ -42,7 +42,7 @@ namespace KinectKannon.Control
             SAFTEY_TOGGLE
         }
 
-        private static async Task HandlePanTilt(MainWindow mainWindow, PanTiltController panTilt, FiringController firingController,
+        private static void HandlePanTilt(MainWindow mainWindow, PanTiltController panTilt, FiringController firingController,
             Key key)
         {
             try
@@ -123,7 +123,7 @@ namespace KinectKannon.Control
         }
 
 
-        private static async Task HandleXboxInputPanTilt(MainWindow mainWindow, PanTiltController panTilt, FiringController firingController,
+        private static void HandleXboxInputPanTilt(MainWindow mainWindow, PanTiltController panTilt, FiringController firingController,
             XboxController handHeldController)
         {
             try
@@ -198,11 +198,11 @@ namespace KinectKannon.Control
             {
                 if (key != null)
                 {
-                    await HandlePanTilt(mainWindow, panTilt, firingController, (Key)key);
+                    HandlePanTilt(mainWindow, panTilt, firingController, (Key)key);
                 }
                 else
                 {
-                    await HandleXboxInputPanTilt(mainWindow, panTilt, firingController, handHeldController);
+                    HandleXboxInputPanTilt(mainWindow, panTilt, firingController, handHeldController);
                 }
             }
             
@@ -252,6 +252,19 @@ namespace KinectKannon.Control
                 key == Key.N)
             {
                 mainWindow.RequestedTrackedSkeleton = SkeletalLetter.F;
+            }
+            else if (key == Key.NumPad4 || key == Key.D4 || handHeldController.IsYPressed)
+            {
+                //toggle 'night vision' mode
+                if (mainWindow.DisplayMode == DisplayMode.INFRARED)
+                {
+                    mainWindow.DisplayMode = DisplayMode.COLOR;
+                }
+                else{
+                    mainWindow.DisplayMode = DisplayMode.INFRARED;
+                }
+                
+                mainWindow.CameraFeedImageSource.Source = mainWindow.ImageSource;
             }
 
             if (handHeldController.IsDPadRightPressed)
