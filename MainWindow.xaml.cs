@@ -328,7 +328,7 @@ namespace KinectKannon
         **/
         void audioReader_FrameArrived(object sender, AudioBeamFrameArrivedEventArgs e)
         {
-            //ADDED FOR TEST PURPOSES
+            //Only interperet Audio if in Audible Tracking state
             if (this.trackingMode == TrackingMode.AUDIBLE)
             {
             AudioBeamFrameReference frameReference = e.FrameReference;
@@ -362,18 +362,24 @@ namespace KinectKannon
                                 this.beamAngleConfidence = subFrame.BeamAngleConfidence;
                                 updateBeam = true;
                             }
-
                             if (updateBeam)
                             {
                                 // Refresh display of audio beam
                                 this.AudioBeamChanged();
+                            } 
+                            else
+                            {
+                                // If there are has been no update in the audio beam then return the X servo velocity to 0
+                                if (panTilt.IsReady)
+                                {
+                                    this.cannonXVelocity = 5;
+                                    panTilt.PanX(this.CannonXVelocity);
+                                }
                             }
                         }
 
                     }
                 }
-
-
             }
 
             catch (Exception)
@@ -403,13 +409,23 @@ namespace KinectKannon
             // Convert from radians to degrees for display purposes
             float beamAngleInDeg = this.beamAngle * 180.0f / (float)Math.PI;
             Console.Write("This is the Angle" + beamAngle + "\n");
+            this.cannonXVelocity = this.beamAngle * UserInputControl.PAN_TILT_SPEED_LIMIT;
+            if (panTilt.IsReady)
+            {
+                panTilt.PanX(this.cannonXVelocity);
+            }
+            else
+            {
+                //Pan is not ready so do nothing
+                if (panTilt.IsReady)
+                {
+                    panTilt.PanX(0);
+                }
+            }
             // Rotate gradient to match angle
             beamBarRotation.Angle = -beamAngleInDeg;
             beamNeedleRotation.Angle = -beamAngleInDeg;
-
-         //   if(Tracking)
         }
-
         private void SetupKeyHandlers()
         {
             //register for keyboard events
@@ -419,7 +435,6 @@ namespace KinectKannon
             handHeldController = XboxController.RetrieveController(0);
             handHeldController.StateChanged += handHeldController_StateChanged;
             XboxController.StartPolling();
-
         }
 
 
@@ -438,7 +453,7 @@ namespace KinectKannon
         /// <param name="e"></param>
         async void MainWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            //passing the xbox controlle here effectivley makes the xbox control able to override the keyboard
+            //passing the xbox controller here effectivley makes the xbox control able to override the keyboard
             await UserInputControl.HandleInput(this, panTilt, firingControl, e.Key, this.handHeldController);
         }
 

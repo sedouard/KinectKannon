@@ -131,7 +131,7 @@ namespace KinectKannon.Control
                 var convertedXboxInputX = ConvertXInputCoordinateToVelocity(handHeldController.LeftThumbStick.X);
                 var convertedXboxInputY = ConvertXInputCoordinateToVelocity(handHeldController.LeftThumbStick.Y);
                 Console.WriteLine("X Value Converted - " + convertedXboxInputX);
-                //Pan Up
+                //Pan Up & Pan Down for Manual Tracking
                 if (convertedXboxInputY <= PAN_TILT_SPEED_LIMIT && !s_PanTiltTooFarDown && mainWindow.TrackingMode == TrackingMode.MANUAL)
                 {
                     s_PanTiltTooFarUp = false;
@@ -139,6 +139,21 @@ namespace KinectKannon.Control
                     panTilt.PanY(mainWindow.CannonYVelocity);
                 }
                 if (convertedXboxInputY >= -1 * PAN_TILT_SPEED_LIMIT && !s_PanTiltTooFarUp && mainWindow.TrackingMode == TrackingMode.MANUAL)
+                {
+
+                    mainWindow.CannonYVelocity = convertedXboxInputY;
+                    //set too far to false. if its stil too far the next key event handler will set to true
+                    s_PanTiltTooFarDown = false;
+                    panTilt.PanY(mainWindow.CannonYVelocity);
+                }
+
+                if (convertedXboxInputY <= PAN_TILT_SPEED_LIMIT && !s_PanTiltTooFarDown && mainWindow.TrackingMode == TrackingMode.AUDIBLE)
+                {
+                    s_PanTiltTooFarUp = false;
+                    mainWindow.CannonYVelocity = convertedXboxInputY;
+                    panTilt.PanY(mainWindow.CannonYVelocity);
+                }
+                if (convertedXboxInputY >= -1 * PAN_TILT_SPEED_LIMIT && !s_PanTiltTooFarUp && mainWindow.TrackingMode == TrackingMode.AUDIBLE)
                 {
 
                     mainWindow.CannonYVelocity = convertedXboxInputY;
