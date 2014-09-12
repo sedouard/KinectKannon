@@ -7,6 +7,7 @@ using KinectKannon;
 using KinectKannon.Control;
 using System.Windows.Input;
 using System.Windows;
+using System.Speech.Synthesis;
 using J2i.Net.XInputWrapper;
 namespace KinectKannon.Control
 {
@@ -16,6 +17,7 @@ namespace KinectKannon.Control
         private static bool s_PanTiltTooFarUp = false;
         private static bool s_PanTiltTooFarLeft = false;
         private static bool s_PanTiltTooFarRight = false;
+        private static SpeechSynthesizer s_VoiceSynth = new SpeechSynthesizer();
         public const uint PAN_TILT_SPEED_LIMIT = 60;
         private const int XINPUT_RESTING_X = -1200;
         private const int XINPUT_MAX_X = 32768;
@@ -310,6 +312,17 @@ namespace KinectKannon.Control
             {
                 //toggle the safety
                 firingController.VirtualSafetyOn = !firingController.VirtualSafetyOn;
+
+                if (!firingController.VirtualSafetyOn)
+                {
+                    s_VoiceSynth.SelectVoice("Microsoft Hazel Desktop");
+                    s_VoiceSynth.SpeakAsync("System Armed! Pull both triggers simultaneously to fire!");
+                }
+                else
+                {
+                    s_VoiceSynth.SelectVoice("Microsoft Hazel Desktop");
+                    s_VoiceSynth.SpeakAsync("System Disarmed!");
+                }
                 //handHeldController.Vibrate(40.0, 40.0, 10.0);
             }
             //MAYBE WE SHOULD PICK A HARDER TO PRESS KEY THAN THE SPACE BAR?

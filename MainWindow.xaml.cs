@@ -28,6 +28,7 @@ namespace KinectKannon
     using System.Windows.Navigation;
     using System.Windows.Shapes;
     using System.Windows.Input;
+    using System.Speech.Synthesis;
     using KinectKannon.Rendering;
     using System.Timers;
     using KinectKannon.Autonomy;
@@ -65,6 +66,8 @@ namespace KinectKannon
         private AudioBeamFrameReader audioReader = null;
 
         private InfraredFrameReader infraredFrameReader = null;
+
+        private SpeechSynthesizer voiceSynth = new SpeechSynthesizer();
 
         /// <summary>
         /// Array for the bodies
@@ -268,7 +271,10 @@ namespace KinectKannon
                 FiringSafetyText = safetyText
             });
 
+            //set voice synth to Hazel
+            this.voiceSynth.SelectVoice("Microsoft Hazel Desktop");
 
+            this.voiceSynth.SpeakAsync("Kinect Cannon Fully Initialized");
             
 
             //debug start frame rate counter

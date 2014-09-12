@@ -7,7 +7,7 @@ using Microsoft.Kinect;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows;
-
+using System.Speech.Synthesis;
 namespace KinectKannon.Rendering
 {
     /// <summary>
@@ -120,11 +120,16 @@ namespace KinectKannon.Rendering
         /// Constant for clamping Z values of camera space points from being negative
         /// </summary>
         private const float InferredZPositionClamp = 0.1f;
+        
+        /// <summary>
+        /// Triggers voice output when we have a skeleton
+        /// </summary>
+        private SpeechSynthesizer voiceSynth = new SpeechSynthesizer();
 
         /// <summary>
-        /// Description (width, height, etc) of the infrared frame data
+        /// Indiicates if we are actually tracking a real person
         /// </summary>
-        private FrameDescription infraredFrameDescription = null;
+        private bool hasValidTracking = false;
 
         private int infraredWidth;
         private int infraredHeight;
@@ -198,6 +203,9 @@ namespace KinectKannon.Rendering
             this.jointDisplayHeight = jointFrameHeight;
             this.infraredWidth = infraredFrameWidth;
             this.infraredHeight = infraredFrameHeight;
+
+            //set voice synth to Hazel
+            this.voiceSynth.SelectVoice("Microsoft Hazel Desktop");
 
             infraredPixels = new ushort[infraredFrameWidth * infraredFrameHeight];
 
@@ -367,6 +375,7 @@ namespace KinectKannon.Rendering
             // Draw a transparent background to set the render size
             this.imageSource.DrawRectangle(0, 0, this.displayWidth, this.displayHeight, Color.FromArgb(255, 128, 128, 128));
             int count = 0;
+            bool trackedBody = false;
             foreach (Body body in bodies)
             {
                 if (body.IsTracked)
@@ -409,6 +418,13 @@ namespace KinectKannon.Rendering
                             {
                                 var joint = jointPoints[jointType];
 
+                                if (!hasValidTracking)
+                                {
+                                    voiceSynth.SpeakAsync("Target Aquired!");
+                                    hasValidTracking = true;
+                                }
+
+                                trackedBody = true;
                                 if (displayMode == DisplayMode.COLOR)
                                 {
                                     this.imageSource.FillEllipse((int)joint.X, (int)joint.Y, (int)joint.X + 50, (int)joint.Y + 50, Color.FromArgb(128, 255, 0, 0));
@@ -435,6 +451,11 @@ namespace KinectKannon.Rendering
                 }
 
                 
+            }
+
+            if (!trackedBody)
+            {
+                hasValidTracking = false;
             }
             // prevent drawing outside of our render area
             //this.drawingGroup.ClipGeometry = new RectangleGeometry(new Rect(0.0, 0.0, this.displayWidth, this.displayHeight));
