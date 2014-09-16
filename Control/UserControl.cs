@@ -24,8 +24,9 @@ namespace KinectKannon.Control
         private const int XINPUT_MAX_Y = 32768;
         private const int XINPUT_RESTING_Y = -2631;
         private const int VIBRATION_INTENSITY = 50;
-        
-   
+        //the user must wait 5 secodns between arming and disarming the system
+        private static TimeSpan s_DisarmWaitTime = new TimeSpan(0,0,5);
+        private static DateTime? s_LastDisarmTime = null;
 
         /// <summary>
         /// The time the valve will remain open on a single fire
@@ -323,28 +324,43 @@ namespace KinectKannon.Control
                 throw ex;
             }
 
-            if (key == Key.P || (handHeldController.IsLeftShoulderPressed & handHeldController.IsRightShoulderPressed))
+            if ((key == Key.P || (handHeldController.IsLeftShoulderPressed & handHeldController.IsRightShoulderPressed)) && firingController.VirtualSafetyOn)
             {
-                //toggle the safety
-                firingController.VirtualSafetyOn = !firingController.VirtualSafetyOn;
 
-                if (!firingController.VirtualSafetyOn)
+
+
+                //keep safety from being toggled too fast
+                if ((DateTime.Now - s_LastDisarmTime > s_DisarmWaitTime) || s_LastDisarmTime == null)
                 {
+                    s_LastDisarmTime = DateTime.Now;
+                    //toggle the safety
+                    firingController.VirtualSafetyOn = !firingController.VirtualSafetyOn;
                     s_VoiceSynth.SelectVoice("Microsoft Hazel Desktop");
                     s_VoiceSynth.SpeakAsync("System Armed, Pull both triggers simultaneously to fire!");
                 }
-                else
+
+                
+                
+                //handHeldController.Vibrate(40.0, 40.0, 10.0);
+            }
+            else if ((key == Key.P || (handHeldController.IsLeftShoulderPressed & handHeldController.IsRightShoulderPressed)) && !firingController.VirtualSafetyOn)
+            {
+                //keep safety from being toggled too fast
+                if (DateTime.Now - s_LastDisarmTime > s_DisarmWaitTime)
                 {
+                    s_LastDisarmTime = DateTime.Now;
+                    //toggle the safety
+                    firingController.VirtualSafetyOn = !firingController.VirtualSafetyOn;
                     s_VoiceSynth.SelectVoice("Microsoft Hazel Desktop");
                     s_VoiceSynth.SpeakAsync("System Disarmed!");
                 }
-                //handHeldController.Vibrate(40.0, 40.0, 10.0);
+                
             }
             //MAYBE WE SHOULD PICK A HARDER TO PRESS KEY THAN THE SPACE BAR?
             if (key == Key.Space || (handHeldController.RightTrigger > 250 && handHeldController.LeftTrigger > 250))
             {
                 handHeldController.Vibrate(VIBRATION_INTENSITY, VIBRATION_INTENSITY, new TimeSpan(1));
-                await firingController.Fire(300);
+                await firingController.Fire(350);
             }
 
             

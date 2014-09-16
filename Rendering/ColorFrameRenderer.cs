@@ -416,7 +416,7 @@ namespace KinectKannon.Rendering
                         //if it is we'll draw a big red circle on the skelton chest
                         if (targetIndex != null && targetIndex == count)
                         {
-                            if (jointType == JointType.Neck)
+                            if (jointType == JointType.Head)
                             {
                                 var joint = jointPoints[jointType];
 

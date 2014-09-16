@@ -63,7 +63,7 @@ namespace KinectKannon.Autonomy
                 // Check if bod is tracked and the index position in array is the same as inputted indexBumb
                 if (body.IsTracked && indexNumb == x)
                 {
-                    Joint spine = body.Joints[JointType.Neck];
+                    Joint spine = body.Joints[JointType.Head];
                     originXDist = spine.Position.X;
                     originYDist = spine.Position.Y;
                     Console.Write("This is X" + originXDist + "This is Y" + originYDist);
