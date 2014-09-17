@@ -134,6 +134,26 @@ namespace KinectKannon.Rendering
         private int infraredWidth;
         private int infraredHeight;
 
+        public DisplayMode DisplayMode
+        {
+            get;
+            set;
+        }
+        public ImageSource ImageSource
+        {
+            get
+            {
+                if (DisplayMode == DisplayMode.COLOR)
+                {
+                    return this.imageSource;
+                }
+                else
+                {
+                    return this.infraredSource;
+                }
+            }
+        }
+
         /// <summary>
         /// Handles the infrared frame data arriving from the sensor
         /// </summary>
@@ -253,16 +273,6 @@ namespace KinectKannon.Rendering
             this.infraredSource = new WriteableBitmap(infraredFrameWidth, infraredFrameHeight, 96.0, 96.0, PixelFormats.Gray16, null);
         }
 
-        /// <summary>
-        /// Gets the bitmap to display
-        /// </summary>
-        public ImageSource ImageSource
-        {
-            get
-            {
-                return this.imageSource;
-            }
-        }
 
         /// <summary>
         /// Gets the bitmap to display

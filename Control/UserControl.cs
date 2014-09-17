@@ -167,7 +167,7 @@ namespace KinectKannon.Control
                 if (mainWindow.CannonXVelocity >= -1 * PAN_TILT_SPEED_LIMIT && !s_PanTiltTooFarRight && mainWindow.TrackingMode == TrackingMode.MANUAL)
                 {
 
-                    mainWindow.CannonXVelocity -= convertedXboxInputX;
+                    mainWindow.CannonXVelocity = convertedXboxInputX;
                     //set too far to false. if its stil too far the next key event handler will set to true
                     s_PanTiltTooFarLeft = false;
                     panTilt.PanX(mainWindow.CannonXVelocity);
@@ -266,8 +266,22 @@ namespace KinectKannon.Control
                 else{
                     mainWindow.DisplayMode = DisplayMode.INFRARED;
                 }
-                
-                mainWindow.CameraFeedImageSource.Source = mainWindow.ImageSource;
+
+                //check to see if this is the UI thread, xbox controller uses different thread
+                if (!mainWindow.Dispatcher.CheckAccess())
+                {
+                    await mainWindow.Dispatcher.BeginInvoke((Action)(()=>{
+                    
+                        mainWindow.CameraFeedImageSource.Source = mainWindow.ImageSource;
+                    
+                    }));
+                    
+                }
+                else
+                {
+                    //we're on the UI thread directly change the UI element image source, keyboard stroke hits this path
+                    mainWindow.CameraFeedImageSource.Source = mainWindow.ImageSource;
+                }
             }
 
             if (handHeldController.IsDPadRightPressed)
