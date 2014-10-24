@@ -1,7 +1,14 @@
 KinectKannon
 ============
-
 The [Kinect Kannon](http://stevenedouard.com/kinect-kannon-worlds-first-kinect-augmented-t-shirt-cannon/) is a semi-autonomous robotic T-Shirt that is augmented by [Kinect for Windows](http://www.microsoft.com/en-us/kinectforwindows/) cannon which fires by opening a valve releasing approximatley 100 PSI of CO2.
+
+![](ScreenShots/ss2.jpg)
+
+# Video
+
+Here is a video with a demo of KinectKannon:
+
+<iframe width="560" height="315" src="//www.youtube.com/embed/hiz9NsTZHDk" frameborder="0" allowfullscreen></iframe>
 
 # How its Made
 
@@ -15,12 +22,10 @@ The Kinect Kannon has been put together with mostly store-bought parts. The part
 - [Kinect For Windows]() and [Kinect for Windows SDK]()
 
 The TShirt Cannon is mounted to the Pan and Tilt control with a piece of 2 by 4 wood. This keeps the cannon attached firmly allowing for more precise control.
-	
-!!! Add photo here!!!
 
-To secure the Pan/Tilt control, a wooden box was made from oak plywood. This provides a very sturdy base for the control as it will be shifting its center of gravity as the cannon is moved and aimed.
+To secure the Pan/Tilt control, a wooden box was made from oak plywood. This provides a very sturdy base for the control as it will be shifting its center of gravity as the cannon is moved and aimed.An empty space is provided in the box with a missing wall. Inside are a few things:
 
-!!! Add photo here!!!An empty space is provided in the box with a missing wall. Inside are a few things:
+![](ScreenShots/ss3.jpg)
 
 - Power Strip
 - USB 8 Motor Servo Controller (to manipulate pan/tilt)
@@ -29,9 +34,13 @@ To secure the Pan/Tilt control, a wooden box was made from oak plywood. This pro
 - CO2 tank and hose
 - XBOX 360 Wireless USB Adapter
 
+
 The space allows us to easily tuck away all the wires required to run the cannon, making for easier operation.
 
 2 Single USB cables, one for the Kinect (it requires USB3) and a USB hub for the relay, XBOX controller and servo controller interface to the laptop. With a single plug from a wall outlet to the powers trip within the box, the system comes alive.
+
+![](ScreenShots/ss4.jpg)
+
 
 ## What's running on the computer? 
 
@@ -56,14 +65,23 @@ Why WPF and not a modern Windows 8 App? .NET and Windows APIs have a different s
 
 The Kinect Kannon is easy to operate but requires a few key pieces of knowledge and warnings.
 
-**Warning:** The CO2 tank when full can contain up to 3000 PSI of gas. This is a very dangerous amount of pressure when mishandled. Here are a few tips to keep you and everyone safe:
+### Warning 
+
+#### CO2 Tank
+The CO2 tank when full can contain up to 3000 PSI of gas. This is a very dangerous amount of pressure when mishandled. Here are a few tips to keep you and everyone safe:
 
 - When flying with the CO2 tanks, TSA regulations require the tanks be emptied AND the valve unscrewed. Refer to the paintball tank labeling for this.
 - When shipping federal regulations require that the CO2 tanks are emptied.
 - Do NOT leave the CO2 tank in your car as the heat may cause it to explode.
 - When attaching and detaching the CO2 tank ensure that you are not unscrewing the valve as this can be deadly.
-- When moving Kinect Kannon, close the CO2 tank valve on the remote line and release and remaining pressure in the cannon by pressing the red button on the electronic valve.
+- When moving Kinect Kannon, close the CO2 tank valve on the remote line and release and remaining pressure in the cannon by pressing the red button on the electronic valve (pictured below).
 - Always fill it up at a paintball store like [Sports Authority]()
+
+![](ScreenShots/ss5.jpg)
+
+#### No Range Stops
+
+The Kinect Kannon Pan/Tilt does not return a position to the main application. Therefore Kinect Kannon does not know its position and its up to you to ensure that it does not turn too far left or right, which can **RIP OUT CORDS AND CAUSE TERRIBLE DAMAGE**. Please be sure to keep an eye on the controller and if the cannon gets out of control for any reason (computer freezes, program crashes etc.) **KILL THE POWER TO KINECT KANNON**.
 
 ### Getting Setup
 
@@ -88,14 +106,53 @@ To pair an XBOX 360 controller to the cannon, press the wireless pairing button 
 
 ### Operating Kinect Kannon
 
+When you start up the Kinect Kannon you will be presented with the Camera (Color Stream) and Heads Up Display (HUD).
+
+![](ScreenShots/ss6.png)
+
+
 Kinect Kannon has 3 operational modes:
 
 - Manual Mode
 - Skeletal Tracking Mode
 - Audible Trackign Mode
 
+
 #### Manual Mode
 
-In manual mode you can control Kinect Kannon on the X and Y axis by moving the left analog stick.
+In manual mode you can control Kinect Kannon on the X and Y axis by moving the left analog stick. This mode is the default mode of Kinect Kannon and can be reached by pressing **X** on the XBOX control.
 
-#### 
+#### Skeletal Mode
+
+In skeletal mode, you cannon control the Kinect Kannon in either the X or Y direction. The Kannon will move to track any detected skeletons in its view. To change the targeted skeleton press **Left** and **Right** on the directional pad (this only works if there is > 1 skeleton on the screen). Press **A** on the XBOX control to get to this mode.
+
+![](ScreenShots/ss7.png)
+
+#### Audible Mode
+
+Audible mode prevents you from controlling Kinect Kannon in the X direction but you can control it in the Y direction. Kinect Kannon will autonomously pan left and right depending on point sounds it recognizes from its directional microphone. Press **B** on the XBOX control to get to this mode.
+
+![](ScreenShots/ss8.png)
+
+
+#### Night vision
+
+The Kinect is equipped with an infrared sensor and therefore can see at night. Press **Y** on the controller to activate night vision mode. This doesn't change any functionality of Kinect Kannon - skeletal and audible tracking work the same.
+
+The video window will be a bit smaller because Kinect's infrared resolution is smaller than its camera.
+
+![](ScreenShots/ss10.png)
+#### Firing the Kinect Kannon
+
+![](ScreenShots/ss9.png)
+
+In all modes you can control the firing and for safety reasons, Kinect Kannon will **NEVER** fire on its own.
+
+To fire the control follow these steps:
+
+1. Ensure that the Kinect Kannon is loaded with a rolled, rubberbanded T-Shirt
+2. Ensure that the CO2 tank is attached to the remote line and that the remote line valve is open.
+3. On your XBOX controller, press the left and right triggers simultaneously. This deactivates the safety and Kinect Kannon will say 'System Armed. Pull Both Triggers Simultaneously to Fire'. The **Safety Status** on the HUD will say 'ENGAGED - READY TO FIRE'.
+4. Ensure that nobody is directly in front of the Kinect Kannon and do not aim it directly at anyone. Pull both left and right triggers and with a loud noise, the T-Shirt should be launched!
+
+
