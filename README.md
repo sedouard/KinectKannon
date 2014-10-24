@@ -17,7 +17,7 @@ The Kinect Kannon has been put together with mostly store-bought parts. The part
 - Phigets [USB Advanced Servo Controller ](http://www.phidgets.com/products.php?category=11&product_id=1061_1)
 - [ServoCity.com MPT2100 Pan and Tilt Module](http://www.servocity.com/html/mpt2100-ds_pan___tilt_system.html#.VEWh5yldV68)
 - Hard Oak Plywood Box Hand Assembled
-- [Kinect For Windows]() and [Kinect for Windows SDK]()
+- [Kinect For Windows](http://www.microsoft.com/en-us/kinectforwindows/) and [Kinect for Windows SDK](http://www.microsoft.com/en-us/download/details.aspx?id=44561)
 
 The TShirt Cannon is mounted to the Pan and Tilt control with a piece of 2 by 4 wood. This keeps the cannon attached firmly allowing for more precise control.
 
@@ -57,9 +57,9 @@ A WPF (Windows Presentation Foundation) desktop application is used with the Kin
 
 Like any other engineering project, we were under a tight timeline. We had approximately 4 weeks before we needed to showcase it at a large presentation. We chose the path of least resistance.
 
-The Kinect SDK works only on Windows, although there is an [open source implementation]() that can be used on Mac OS X and Linux. The SDK works out of the box seamlessly with the Kinect and already has very nice wrappers for C#. We decided to use the SDK as it provided samples in C# for skeletal, audio and color frame rendering. It made things way faster by simply taking the code examples and organizing them into a larger application.
+The Kinect SDK works only on Windows, although there is an [open source implementation](http://openkinect.org/wiki/Main_Page) that can be used on Mac OS X and Linux. The SDK works out of the box seamlessly with the Kinect and already has very nice wrappers for C#. We decided to use the SDK as it provided samples in C# for skeletal, audio and color frame rendering. It made things way faster by simply taking the code examples and organizing them into a larger application.
 
-Why WPF and not a modern Windows 8 App? .NET and Windows APIs have a different surface area for the Windows 8 app environment. In this environment not all APIs available on the desktop are accessible. Although the [Kinect SDK v2.0 supports Windows 8 apps](), the drivers for the servo controller, relay controller and possibly the open source library for the XBOX controller had dependencies on legacy desktop APIs. We also have no intention of publishing the app on the store because the Kinect Kannon is quite expensive!
+Why WPF and not a modern Windows 8 App? .NET and Windows APIs have a different surface area for the Windows 8 app environment. In this environment not all APIs available on the desktop are accessible. Although the [Kinect SDK v2.0 supports Windows 8 apps](https://games.yahoo.com/news/microsoft-releases-final-kinect-sdk-155534346.html), the drivers for the servo controller, relay controller and possibly the open source library for the XBOX controller had dependencies on legacy desktop APIs. We also have no intention of publishing the app on the store because the Kinect Kannon is quite expensive!
 
 ## How to Operate KinectKannon
 
@@ -75,7 +75,7 @@ The CO2 tank when full can contain up to 3000 PSI of gas. This is a very dangero
 - Do NOT leave the CO2 tank in your car as the heat may cause it to explode.
 - When attaching and detaching the CO2 tank ensure that you are not unscrewing the valve as this can be deadly.
 - When moving Kinect Kannon, close the CO2 tank valve on the remote line and release and remaining pressure in the cannon by pressing the red button on the electronic valve (pictured below).
-- Always fill it up at a paintball store like [Sports Authority]()
+- Always fill it up at a paintball store like [Sports Authority](http://sportsauthority.com)
 
 ![](ScreenShots/ss5.jpg)
 
@@ -89,9 +89,9 @@ Ensure that you have a **fast** **dedicated** machine to use. You need an i7 Sur
 
 Install the following:
 
-- [Kinect for Windows SDK]()
-- [Phidgets USB Driver]()
-- Visual Studio 2013 (or newer)
+- [Kinect for Windows SDK]http://www.microsoft.com/en-us/download/details.aspx?id=44561)
+- [Phidgets USB .NET Libraries and Drivers](http://www.phidgets.com/docs/OS_-_Windows)
+- [Visual Studio/VS Express 2013](http://www.visualstudio.com/downloads/download-visual-studio-vs) (or newer)
 
 ### Running Kinect Kannon
 
