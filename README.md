@@ -6,9 +6,7 @@ The [Kinect Kannon](http://stevenedouard.com/kinect-kannon-worlds-first-kinect-a
 
 # Video
 
-Here is a video with a demo of KinectKannon:
-
-<iframe width="560" height="315" src="//www.youtube.com/embed/hiz9NsTZHDk" frameborder="0" allowfullscreen></iframe>
+Checkout the [Video demo](http://www.youtube.com/watch?v=hiz9NsTZHDk) of the KinectKannon.
 
 # How its Made
 
@@ -23,7 +21,9 @@ The Kinect Kannon has been put together with mostly store-bought parts. The part
 
 The TShirt Cannon is mounted to the Pan and Tilt control with a piece of 2 by 4 wood. This keeps the cannon attached firmly allowing for more precise control.
 
-To secure the Pan/Tilt control, a wooden box was made from oak plywood. This provides a very sturdy base for the control as it will be shifting its center of gravity as the cannon is moved and aimed.An empty space is provided in the box with a missing wall. Inside are a few things:
+To secure the Pan/Tilt control, a wooden box was made from oak plywood. This provides a very sturdy base for the control as it will be shifting its center of gravity as the cannon is moved and aimed.
+
+An empty space is provided in the box with a missing wall. Inside are a few things:
 
 ![](ScreenShots/ss3.jpg)
 
