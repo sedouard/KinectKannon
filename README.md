@@ -6,7 +6,7 @@ The [Kinect Kannon](http://stevenedouard.com/kinect-kannon-worlds-first-kinect-a
 
 # Video
 
-Checkout the [Video demo](http://www.youtube.com/watch?v=hiz9NsTZHDk) of the KinectKannon.
+Checkout the [Video demo](https://www.youtube.com/watch?v=_VG13IH3CSU&feature=youtu.be) of the KinectKannon.
 
 # How its Made
 
